@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JumperVPN 纯API注册版 - 可部署"""
+
 import json, time, hashlib, hmac, uuid, base64, re, random, string
 import urllib.request, urllib.error, ssl
 from datetime import datetime
@@ -27,7 +27,7 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>奕涵 VPN 注册器</title>
+    <title>奕涵  注册器</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -444,8 +444,8 @@ HTML_TEMPLATE = '''
 <body>
     <div class="container">
         <div class="header">
-            <h1>✨ 奕涵 VPN</h1>
-            <p>一键注册 · 免费时长</p>
+            <h1>奕涵 VPN</h1>
+            <p></p>
         </div>
         <div class="content">
             <form id="registerForm">
@@ -496,7 +496,7 @@ HTML_TEMPLATE = '''
             </div>
 
             <div class="device-info">
-                💡 每次注册都会使用新设备标识
+                ©2026.yihan
             </div>
         </div>
     </div>
@@ -505,7 +505,7 @@ HTML_TEMPLATE = '''
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-icon">🎉</div>
+                <div class="modal-icon"></div>
                 <div class="modal-title">注册成功！</div>
                 <div class="modal-subtitle">请保存好您的账号信息</div>
             </div>
@@ -991,6 +991,6 @@ def api_status(session_id):
     })
 
 if __name__ == '__main__':
-    print('奕涵 VPN 注册器启动中...')
+    print('奕涵  注册器启动中...')
     print('请在浏览器中访问: http://127.0.0.1:5000')
     app.run(host='0.0.0.0', port=5000, debug=False)
