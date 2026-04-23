@@ -1,871 +1,699 @@
-#!/usr/bin/env python3
-
-import json, time, hashlib, hmac, uuid, base64, re, random, string
-import urllib.request, urllib.error, ssl
-from datetime import datetime
-from flask import Flask, render_template_string, request, jsonify
-import threading
-
-BASE = 'https://api.jumperservice.com/v1/'
-SIGN_KEY = '000000000000000000018d91e471e0989cda27df505a453f2b7635294f2ddf23e3b122acc99c9e9f1e14'
-MAIL_TM = 'https://api.mail.tm'
-PC_NAME = 'DESKTOP-Web'
-
-ctx = ssl.create_default_context()
-no_proxy_handler = urllib.request.ProxyHandler({})
-opener = urllib.request.build_opener(no_proxy_handler, urllib.request.HTTPSHandler(context=ctx))
-opener.addheaders = []
-
-app = Flask(__name__)
-
-# 会话存储（内存中，重启会丢失）
-sessions = {}
-
-HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>奕涵</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>奕涵 · JumperVPN 极速注册助手</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); 
-            min-height: 100vh; 
-            padding: 40px 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container { 
-            max-width: 500px; 
-            margin: 0 auto; 
-            background: rgba(255, 255, 255, 0.95); 
-            border-radius: 20px; 
-            box-shadow: 0 25px 80px rgba(0,0,0,0.25); 
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-        .header { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-            padding: 32px 24px; 
-            text-align: center;
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(15, 25, 45, 0.96), rgba(8, 12, 24, 0.98)),
+                        repeating-linear-gradient(45deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 8px);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
             position: relative;
         }
-        .header::before {
+
+        /* 动态光晕背景 */
+        body::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            opacity: 0.5;
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.05) 50%, transparent 80%);
+            animation: aurora 18s infinite alternate;
+            pointer-events: none;
+            z-index: 0;
         }
-        .header-content {
-            position: relative;
-            z-index: 1;
+
+        @keyframes aurora {
+            0% { opacity: 0.4; transform: translate(0%, 0%) rotate(0deg);}
+            100% { opacity: 1; transform: translate(5%, 5%) rotate(2deg);}
         }
-        .header h1 { 
-            font-size: 32px; 
-            margin-bottom: 8px;
-            font-weight: 700;
-            letter-spacing: -0.5px;
+
+        .glass-card {
+            max-width: 580px;
+            width: 100%;
+            background: rgba(20, 28, 40, 0.75);
+            backdrop-filter: blur(18px);
+            border-radius: 48px;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5), 0 0 0 0.5px rgba(255,255,255,0.1) inset;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 2;
         }
-        .header p {
-            font-size: 14px;
-            opacity: 0.9;
-            font-weight: 500;
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%);
+            padding: 32px 28px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
         }
-        .content { 
-            padding: 28px 24px; 
-        }
-        .form-group { 
-            margin-bottom: 20px; 
-        }
-        label { 
-            display: block; 
-            font-weight: 600; 
-            color: #374151; 
-            margin-bottom: 8px; 
-            font-size: 14px;
-        }
-        .input-wrapper {
-            position: relative;
-        }
-        input[type="text"], input[type="password"] { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 2px solid #e5e7eb; 
-            border-radius: 12px; 
-            font-size: 15px; 
-            transition: all 0.3s;
-            background: #f9fafb;
-        }
-        input[type="text"]:focus, input[type="password"]:focus { 
-            outline: none; 
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        .toggle-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #6b7280;
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+            padding: 6px 14px;
+            border-radius: 60px;
             font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: all 0.2s;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            color: white;
         }
-        .toggle-btn:hover {
-            background: #f3f4f6;
-            color: #374151;
+
+        .card-header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
-        .radio-group { 
-            display: flex; 
-            gap: 12px; 
-            margin-top: 8px; 
+
+        .card-header h1 i {
+            font-size: 2rem;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.2));
         }
-        .radio-item { 
+
+        .card-header p {
+            color: rgba(255,255,255,0.85);
+            margin-top: 12px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .card-body {
+            padding: 28px 28px 32px;
+        }
+
+        .input-group {
+            margin-bottom: 22px;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #cdd9ff;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .input-label i {
+            width: 20px;
+            font-size: 0.9rem;
+            color: #8b9eff;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(10, 15, 28, 0.7);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 14px 18px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #f0f3ff;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #8b9eff;
+            background: rgba(15, 22, 40, 0.9);
+            box-shadow: 0 0 0 4px rgba(139, 158, 255, 0.2);
+        }
+
+        .radio-container {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
             flex: 1;
-            display: flex; 
-            align-items: center; 
+            background: rgba(10, 15, 28, 0.6);
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            padding: 10px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 14px;
-            background: #f9fafb;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
+            font-weight: 600;
+            color: #b9c7ff;
+        }
+
+        .radio-option i {
+            font-size: 1rem;
+        }
+
+        .radio-option.active {
+            background: linear-gradient(120deg, #667eea, #764ba2);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 6px 14px rgba(102,126,234,0.4);
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        .btn-glow {
+            width: 100%;
+            background: linear-gradient(95deg, #667eea, #a777e3);
+            border: none;
+            padding: 16px;
+            border-radius: 48px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            margin-top: 12px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(102,126,234,0.3);
         }
-        .radio-item:hover {
-            border-color: #c7d2fe;
-        }
-        .radio-item input {
-            margin: 0;
-            accent-color: #667eea;
-        }
-        .radio-item.selected {
-            border-color: #667eea;
-            background: #eff6ff;
-        }
-        .btn { 
-            width: 100%; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 600; 
-            transition: all 0.3s;
-        }
-        .btn:disabled { 
-            opacity: 0.6; 
+
+        .btn-glow:disabled {
+            opacity: 0.55;
+            transform: scale(0.98);
             cursor: not-allowed;
         }
-        .btn-primary { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+
+        .btn-glow:active:not(:disabled) {
+            transform: scale(0.97);
         }
-        .btn-primary:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-        }
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-            margin-top: 12px;
-        }
-        .btn-secondary:hover:not(:disabled) {
-            background: #e5e7eb;
-        }
-        .result-card { 
-            margin-top: 24px; 
-            padding: 20px; 
-            border-radius: 16px; 
-            background: #f0fdf4; 
-            border: 2px solid #86efac; 
+
+        .log-console {
+            background: #0a0e18;
+            border-radius: 28px;
+            margin-top: 24px;
+            padding: 8px 0;
+            border: 1px solid rgba(255,255,255,0.08);
             display: none;
-            animation: slideIn 0.3s ease-out;
+            overflow: hidden;
         }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .log-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #8b9eff;
+            letter-spacing: 1px;
         }
-        .result-card.error { 
-            background: #fef2f2; 
-            border-color: #fca5a5; 
+
+        .log-content {
+            height: 240px;
+            overflow-y: auto;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', 'SF Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            color: #a2f5d0;
         }
+
+        .log-content div {
+            margin-bottom: 6px;
+            border-left: 2px solid #2a3a6e;
+            padding-left: 12px;
+            opacity: 0.9;
+        }
+
+        .result-card {
+            margin-top: 28px;
+            background: rgba(16, 24, 36, 0.8);
+            border-radius: 32px;
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(102,126,234,0.4);
+            display: none;
+            animation: fadeUp 0.4s ease;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .result-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #6ef0b0;
+            margin-bottom: 18px;
         }
-        .result-header h3 {
-            font-size: 18px;
-            color: #166534;
+
+        .info-row {
+            background: rgba(0,0,0,0.35);
+            border-radius: 24px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
-        .result-card.error .result-header h3 {
-            color: #991b1b;
-        }
-        .info-item { 
-            display: flex; 
-            flex-direction: column;
-            padding: 12px; 
-            background: white;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        .info-label { 
-            font-weight: 600; 
-            color: #6b7280; 
-            font-size: 12px;
+
+        .info-label {
+            font-size: 0.7rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            color: #9aa9cf;
         }
-        .info-value { 
-            color: #1f2937; 
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
+
+        .info-value {
+            font-family: monospace;
+            font-weight: 600;
             word-break: break-all;
+            color: #f0f3ff;
+            font-size: 0.85rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .copy-btn {
-            padding: 6px 10px;
-            background: #f3f4f6;
-            border: none;
-            border-radius: 6px;
+
+        .copy-badge {
+            background: #2a3a6e;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
             cursor: pointer;
-            font-size: 12px;
-            color: #6b7280;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .copy-btn:hover {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        .token-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .token-display {
-            flex: 1;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            word-break: break-all;
-        }
-        .log-box { 
-            margin-top: 24px; 
-            background: #1f2937; 
-            color: #10b981; 
-            padding: 16px; 
-            border-radius: 12px; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-size: 13px; 
-            height: 280px; 
-            overflow-y: auto; 
-            line-height: 1.7;
-            display: none;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .log-box::-webkit-scrollbar {
-            width: 8px;
-        }
-        .log-box::-webkit-scrollbar-track {
-            background: #374151;
-            border-radius: 4px;
-        }
-        .log-box::-webkit-scrollbar-thumb {
-            background: #6b7280;
-            border-radius: 4px;
-        }
-        .log-entry { 
-            margin-bottom: 4px;
-        }
-        .loading { 
-            display: none; 
-            text-align: center; 
-            padding: 24px;
-        }
-        .spinner { 
-            border: 4px solid #f3f4f6; 
-            border-top: 4px solid #667eea; 
-            border-radius: 50%; 
-            width: 50px; 
-            height: 50px; 
-            animation: spin 1s linear infinite; 
-            margin: 0 auto 16px;
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        .loading p {
-            color: #374151;
+            transition: 0.2s;
             font-weight: 500;
         }
-        .device-info {
-            margin-top: 16px;
+
+        .copy-badge:hover {
+            background: #4c6eb0;
+        }
+
+        .token-toggle {
+            background: none;
+            border: 1px solid #4c6eb0;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            color: #bbd1ff;
+        }
+
+        .btn-reset {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            width: 100%;
+            margin-top: 12px;
+            border-radius: 40px;
             padding: 12px;
-            background: #fef3c7;
-            border-radius: 10px;
-            border: 1px solid #fcd34d;
-            font-size: 13px;
-            color: #92400e;
+            font-weight: 600;
+            color: #cfdcff;
+            transition: 0.2s;
+        }
+
+        .loader {
+            display: none;
             text-align: center;
+            margin: 24px 0;
+        }
+
+        .spinner-circle {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(102,126,234,0.2);
+            border-top: 4px solid #a777e3;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-header {
+            color: #ffb4a2;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #11161f;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4c6eb0;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 520px) {
+            .glass-card { border-radius: 32px; }
+            .card-body { padding: 20px; }
+            .info-value { font-size: 0.75rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <h1>🚀 JumperVPN</h1>
-                <p>注册</p>
+
+<div class="glass-card">
+    <div class="card-header">
+        <div class="badge"><i class="fas fa-bolt"></i> 一键智能注册 · 极速隧道</div>
+        <h1><i class="fas fa-shield-alt"></i> JumperVPN <span style="font-weight: 500;">奕涵</span></h1>
+        <p>临时邮箱 + 自动验证码 · 永久免费试用流</p>
+    </div>
+    <div class="card-body">
+        <div class="input-group">
+            <div class="input-label"><i class="fas fa-envelope"></i> 邮箱 (自动生成)</div>
+            <input type="text" id="displayEmail" class="input-field" placeholder="注册后自动填充" readonly style="background: #0a0f1c; color:#9aa9cf;">
+        </div>
+        <div class="input-group">
+            <div class="input-label"><i class="fas fa-lock"></i> 密码</div>
+            <input type="text" id="userPwd" class="input-field" placeholder="留空使用默认密码 (Xiangzi6681)" value="Xiangzi6681">
+        </div>
+        <div class="input-group">
+            <div class="input-label"><i class="fas fa-ticket-alt"></i> 邀请码</div>
+            <input type="text" id="inviteCode" class="input-field" value="9QGE5V" placeholder="推荐码">
+        </div>
+        <div class="input-group">
+            <div class="input-label"><i class="fas fa-mobile-alt"></i> 设备模式</div>
+            <div class="radio-container">
+                <label class="radio-option" id="radioIos">
+                    <i class="fab fa-apple"></i> iOS
+                    <input type="radio" name="deviceMode" value="ios" checked>
+                </label>
+                <label class="radio-option" id="radioWin">
+                    <i class="fab fa-windows"></i> Windows
+                    <input type="radio" name="deviceMode" value="windows">
+                </label>
             </div>
         </div>
-        <div class="content">
-            <form id="registerForm">
-                <div class="form-group">
-                    <label>📧 邮箱</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="login_email" placeholder="注册成功后自动填充">
+        <button class="btn-glow" id="startBtn"><i class="fas fa-rocket"></i> 极速注册</button>
+
+        <div class="loader" id="loaderArea">
+            <div class="spinner-circle"></div>
+            <p style="color:#b9c7ff; font-size:0.8rem;">正在穿越云层 · 获取账号中</p>
+        </div>
+
+        <div class="log-console" id="logConsole">
+            <div class="log-header"><i class="fas fa-terminal"></i> 实时日志流</div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-header" id="resultHeader">
+                <i class="fas fa-check-circle"></i> <span id="resultTitle">注册成功</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">📧 邮箱</span>
+                <span class="info-value"><span id="resEmail"></span> <span class="copy-badge" data-copy="email">复制</span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">🔑 密码</span>
+                <span class="info-value"><span id="resPwd"></span> <span class="copy-badge" data-copy="pwd">复制</span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">⏱️ 免费时长</span>
+                <span class="info-value"><span id="resFree"></span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">📅 到期时间</span>
+                <span class="info-value"><span id="resEnd"></span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">🎫 JWT Token</span>
+                <div class="info-value" style="flex-direction: column; align-items: flex-start;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; width: 100%;">
+                        <span id="resToken" style="font-family: monospace; word-break: break-all;">••••••••</span>
+                        <button class="token-toggle" id="toggleTokenBtn">显示</button>
+                        <span class="copy-badge" data-copy="token">复制Token</span>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>🔐 密码</label>
-                    <div class="input-wrapper">
-                        <input type="text" id="login_pwd" placeholder="注册成功后自动填充">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>🎫 邀请码</label>
-                    <input type="text" id="invite" value="9QGE5V" placeholder="输入邀请码">
-                </div>
-                <div class="form-group">
-                    <label>⚙️ 设备模式</label>
-                    <div class="radio-group">
-                        <label class="radio-item selected" id="radio_ios">
-                            <input type="radio" name="mode" id="mode_ios" value="ios" checked>
-                            iOS
-                        </label>
-                        <label class="radio-item" id="radio_windows">
-                            <input type="radio" name="mode" id="mode_windows" value="windows">
-                            Windows
-                        </label>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary" id="submitBtn">✨ 开始注册</button>
-            </form>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>正在注册中，请稍候...</p>
             </div>
-
-            <div class="log-box" id="log_box"></div>
-
-            <div class="result-card" id="result_card">
-                <div class="result-header">
-                    <h3 id="result_title">✅ 注册成功！</h3>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">邮箱</span>
-                    <span class="info-value">
-                        <span id="res_email"></span>
-                        <button class="copy-btn" onclick="copyText('res_email')">复制</button>
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">密码</span>
-                    <span class="info-value">
-                        <span id="res_pwd"></span>
-                        <button class="copy-btn" onclick="copyText('res_pwd')">复制</button>
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">时长</span>
-                    <span class="info-value" id="res_free"></span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">到期时间</span>
-                    <span class="info-value" id="res_end"></span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">JWT Token</span>
-                    <span class="info-value">
-                        <span class="token-wrapper" style="flex: 1;">
-                            <span class="token-display" id="res_token"></span>
-                            <button class="toggle-btn" onclick="toggleToken()" id="token_toggle">显示</button>
-                        </span>
-                        <button class="copy-btn" onclick="copyText('res_token')">复制</button>
-                    </span>
-                </div>
-                <button class="btn btn-secondary" onclick="resetForm()">🔄 重新注册</button>
-            </div>
-
-            <div class="device-info">
-                
-            </div>
+            <button class="btn-reset" id="resetBtn"><i class="fas fa-sync-alt"></i> 重新注册</button>
         </div>
     </div>
+</div>
 
-    <script>
-        let sessionId = '';
-        let pollInterval;
-        let tokenHidden = true;
-        let currentResult = null;
+<script>
+    // 交互增强 & 轮询逻辑
+    let currentSessionId = null;
+    let pollInterval = null;
+    let currentTokenHidden = true;
+    let latestResultData = null;
 
-        // Radio button styling
-        document.querySelectorAll('input[name="mode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.querySelectorAll('.radio-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                this.parentElement.classList.add('selected');
-            });
-        });
+    // 选择样式联动
+    const radioIos = document.getElementById('radioIos');
+    const radioWin = document.getElementById('radioWin');
+    const iosRadioInput = document.querySelector('input[value="ios"]');
+    const winRadioInput = document.querySelector('input[value="windows"]');
 
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            startRegister();
-        });
-
-        function startRegister() {
-            const config = {
-                invite: document.getElementById('invite').value,
-                pwd: document.getElementById('login_pwd').value || 'Xiangzi6681',
-                mode: document.querySelector('input[name="mode"]:checked').value
-            };
-
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('result_card').style.display = 'none';
-            document.getElementById('log_box').style.display = 'block';
-
-            fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    sessionId = data.session_id;
-                    pollInterval = setInterval(pollStatus, 500);
-                } else {
-                    showError(data.error);
-                }
-            }).catch(err => {
-                showError('请求失败: ' + err);
-            });
+    function updateRadioUI() {
+        if(iosRadioInput.checked) {
+            radioIos.classList.add('active');
+            radioWin.classList.remove('active');
+        } else {
+            radioWin.classList.add('active');
+            radioIos.classList.remove('active');
         }
+    }
+    iosRadioInput.addEventListener('change', updateRadioUI);
+    winRadioInput.addEventListener('change', updateRadioUI);
+    updateRadioUI();
 
-        function pollStatus() {
-            fetch('/api/status/' + sessionId).then(r => r.json()).then(data => {
-                updateLogs(data.logs);
-                
-                if (data.done) {
-                    clearInterval(pollInterval);
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('submitBtn').disabled = false;
-                    
-                    if (data.success) {
-                        showResult(data.result);
+    // UI helpers
+    const startBtn = document.getElementById('startBtn');
+    const loaderArea = document.getElementById('loaderArea');
+    const logConsole = document.getElementById('logConsole');
+    const logContent = document.getElementById('logContent');
+    const resultCard = document.getElementById('resultCard');
+    const resEmailSpan = document.getElementById('resEmail');
+    const resPwdSpan = document.getElementById('resPwd');
+    const resFreeSpan = document.getElementById('resFree');
+    const resEndSpan = document.getElementById('resEnd');
+    const resTokenSpan = document.getElementById('resToken');
+    const toggleTokenBtn = document.getElementById('toggleTokenBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const displayEmailField = document.getElementById('displayEmail');
+    const userPwdInput = document.getElementById('userPwd');
+    const inviteInput = document.getElementById('inviteCode');
+
+    function addLog(msg) {
+        const div = document.createElement('div');
+        div.textContent = msg;
+        logContent.appendChild(div);
+        div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function clearLogs() {
+        logContent.innerHTML = '';
+    }
+
+    function stopPolling() {
+        if(pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+        }
+    }
+
+    function resetUI() {
+        stopPolling();
+        currentSessionId = null;
+        latestResultData = null;
+        resultCard.style.display = 'none';
+        logConsole.style.display = 'none';
+        loaderArea.style.display = 'none';
+        startBtn.disabled = false;
+        currentTokenHidden = true;
+        resTokenSpan.textContent = '••••••••';
+        toggleTokenBtn.textContent = '显示';
+        displayEmailField.value = '';
+        clearLogs();
+    }
+
+    function showErrorResult(errMsg) {
+        resultCard.style.display = 'block';
+        document.getElementById('resultHeader').innerHTML = '<i class="fas fa-times-circle"></i>';
+        document.getElementById('resultTitle').textContent = '注册失败';
+        document.getElementById('resultHeader').style.color = '#ffb4a2';
+        resEmailSpan.textContent = errMsg;
+        resPwdSpan.textContent = '—';
+        resFreeSpan.textContent = '—';
+        resEndSpan.textContent = '—';
+        resTokenSpan.textContent = '—';
+        latestResultData = null;
+    }
+
+    function showSuccessResult(data) {
+        resultCard.style.display = 'block';
+        document.getElementById('resultHeader').innerHTML = '<i class="fas fa-check-circle"></i>';
+        document.getElementById('resultTitle').textContent = '注册成功 🎉';
+        document.getElementById('resultHeader').style.color = '#6ef0b0';
+        resEmailSpan.textContent = data.email;
+        resPwdSpan.textContent = data.pwd;
+        resFreeSpan.textContent = data.free_time;
+        resEndSpan.textContent = data.end_time;
+        latestResultData = data;
+        currentTokenHidden = true;
+        resTokenSpan.textContent = '••••••••••••••••••••';
+        toggleTokenBtn.textContent = '显示';
+        displayEmailField.value = data.email;
+        // 密码回填到输入框（便于手动）
+        if(userPwdInput.value === 'Xiangzi6681' || userPwdInput.value === '') {
+            userPwdInput.value = data.pwd;
+        }
+    }
+
+    function pollStatus(sessionId) {
+        fetch(`/api/status/${sessionId}`)
+            .then(res => res.json())
+            .then(data => {
+                // 刷新日志
+                if(data.logs && data.logs.length) {
+                    clearLogs();
+                    data.logs.forEach(line => addLog(line));
+                }
+                if(data.done) {
+                    stopPolling();
+                    loaderArea.style.display = 'none';
+                    startBtn.disabled = false;
+                    if(data.success && data.result) {
+                        showSuccessResult(data.result);
                     } else {
-                        showError(data.error);
+                        showErrorResult(data.error || '注册流程失败，请重试');
                     }
+                } else {
+                    // 继续轮询
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                stopPolling();
+                loaderArea.style.display = 'none';
+                startBtn.disabled = false;
+                showErrorResult('状态查询失败: ' + err);
             });
-        }
+    }
 
-        function updateLogs(logs) {
-            const logBox = document.getElementById('log_box');
-            logBox.innerHTML = logs.map(log => '<div class="log-entry">' + log + '</div>').join('');
-            logBox.scrollTop = logBox.scrollHeight;
-        }
+    startBtn.addEventListener('click', () => {
+        if(startBtn.disabled) return;
+        const pwd = userPwdInput.value.trim();
+        const finalPwd = pwd === '' ? 'Xiangzi6681' : pwd;
+        const invite = inviteInput.value.trim() || '9QGE5V';
+        const mode = document.querySelector('input[name="deviceMode"]:checked').value;
 
-        function showResult(result) {
-            currentResult = result;
-            tokenHidden = true;
-            
-            // 自动回填到登录输入框
-            document.getElementById('login_email').value = result.email;
-            document.getElementById('login_pwd').value = result.pwd;
-            
-            const card = document.getElementById('result_card');
-            card.style.display = 'block';
-            card.classList.remove('error');
-            document.getElementById('result_title').textContent = '✅ 注册成功！';
-            document.getElementById('res_email').textContent = result.email;
-            document.getElementById('res_pwd').textContent = result.pwd;
-            document.getElementById('res_free').textContent = result.free_time;
-            document.getElementById('res_end').textContent = result.end_time;
-            
-            // Token默认隐藏
-            document.getElementById('res_token').textContent = '••••••••••••••••••••';
-            document.getElementById('token_toggle').textContent = '显示';
-        }
+        const payload = {
+            pwd: finalPwd,
+            invite: invite,
+            mode: mode
+        };
 
-        function showError(error) {
-            const card = document.getElementById('result_card');
-            card.style.display = 'block';
-            card.classList.add('error');
-            document.getElementById('result_title').textContent = '❌ 注册失败';
-            document.getElementById('res_email').textContent = error;
-            document.getElementById('res_pwd').textContent = '';
-            document.getElementById('res_free').textContent = '';
-            document.getElementById('res_end').textContent = '';
-            document.getElementById('res_token').textContent = '';
-        }
+        resetUI();
+        loaderArea.style.display = 'block';
+        logConsole.style.display = 'block';
+        startBtn.disabled = true;
 
-        function toggleToken() {
-            const tokenEl = document.getElementById('res_token');
-            const toggleBtn = document.getElementById('token_toggle');
-            if (tokenHidden && currentResult) {
-                tokenEl.textContent = currentResult.token;
-                toggleBtn.textContent = '隐藏';
+        fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if(res.success && res.session_id) {
+                currentSessionId = res.session_id;
+                pollInterval = setInterval(() => pollStatus(currentSessionId), 800);
             } else {
-                tokenEl.textContent = '••••••••••••••••••••';
-                toggleBtn.textContent = '显示';
+                throw new Error('无法初始化注册会话');
             }
-            tokenHidden = !tokenHidden;
-        }
+        })
+        .catch(err => {
+            loaderArea.style.display = 'none';
+            startBtn.disabled = false;
+            logConsole.style.display = 'block';
+            addLog(`❌ 请求失败: ${err.message}`);
+            showErrorResult('网络错误，请稍后重试');
+        });
+    });
 
-        function copyText(elementId) {
-            let text = '';
-            if (elementId === 'res_token' && tokenHidden && currentResult) {
-                text = currentResult.token;
+    // 复制功能 (通用)
+    document.addEventListener('click', (e) => {
+        if(e.target.classList.contains('copy-badge')) {
+            const target = e.target.getAttribute('data-copy');
+            let textToCopy = '';
+            if(target === 'email' && latestResultData) textToCopy = latestResultData.email;
+            else if(target === 'pwd' && latestResultData) textToCopy = latestResultData.pwd;
+            else if(target === 'token') {
+                if(latestResultData && latestResultData.token) {
+                    textToCopy = latestResultData.token;
+                } else textToCopy = '';
+            }
+            if(textToCopy) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const original = e.target.innerText;
+                    e.target.innerText = '已复制!';
+                    setTimeout(() => { e.target.innerText = original; }, 1200);
+                }).catch(() => alert('复制失败'));
             } else {
-                text = document.getElementById(elementId).textContent;
+                alert('无有效内容');
             }
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = event.target;
-                const original = btn.textContent;
-                btn.textContent = '已复制!';
-                setTimeout(() => {
-                    btn.textContent = original;
-                }, 1500);
-            }).catch(err => {
-                alert('复制失败: ' + err);
-            });
         }
+    });
 
-        function resetForm() {
-            document.getElementById('result_card').style.display = 'none';
-            document.getElementById('log_box').style.display = 'none';
-            document.getElementById('log_box').innerHTML = '';
-            currentResult = null;
-            tokenHidden = true;
+    toggleTokenBtn.addEventListener('click', () => {
+        if(!latestResultData || !latestResultData.token) {
+            alert('暂无Token数据');
+            return;
         }
-    </script>
+        if(currentTokenHidden) {
+            resTokenSpan.textContent = latestResultData.token;
+            toggleTokenBtn.textContent = '隐藏';
+        } else {
+            resTokenSpan.textContent = '••••••••••••••••••••';
+            toggleTokenBtn.textContent = '显示';
+        }
+        currentTokenHidden = !currentTokenHidden;
+    });
+
+    resetBtn.addEventListener('click', () => {
+        resetUI();
+        resultCard.style.display = 'none';
+        logConsole.style.display = 'none';
+        displayEmailField.value = '';
+        userPwdInput.value = 'Xiangzi6681';
+        if(pollInterval) clearInterval(pollInterval);
+        startBtn.disabled = false;
+        latestResultData = null;
+        currentTokenHidden = true;
+    });
+</script>
 </body>
 </html>
-'''
-
-class JumperRegister:
-    def __init__(self):
-        pass
-
-    def log(self, msg, logs):
-        ts = datetime.now().strftime('%H:%M:%S')
-        line = f'[{ts}] {msg}'
-        logs.append(line)
-
-    def md5(self, text):
-        return hashlib.md5(text.encode('utf-8')).hexdigest()
-
-    def make_sign(self, path):
-        return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256).hexdigest()
-
-    def api_call(self, path, method='GET', body=None, token=None, imei=None, mode='ios'):
-        url = BASE + path.lstrip('/')
-        sign = self.make_sign('/v1/' + path.lstrip('/'))
-        data = json.dumps(body).encode('utf-8') if body else None
-        req = urllib.request.Request(url, data=data, method=method)
-
-        req.add_header('app-id', '2')
-        req.add_header('version', '1.0.8')
-        req.add_header('buildNumber', '3')
-        req.add_header('x-sign', sign)
-        req.add_header('Accept', '*/*')
-
-        if mode == 'ios':
-            req.add_header('os', 'ios')
-            req.add_header('Content-Language', 'en-us')
-            req.add_header('User-Agent',
-                'JumperVPN/1.0.8 (com.jumper.net.solutions.vpn; build:3; iOS 18.6.0) Alamofire/5.10.2')
-            req.add_header('Accept-Language', 'zh-Hans-CN;q=1.0')
-            req.add_header('Accept-Encoding', 'br;q=1.0, gzip;q=0.9, deflate;q=0.8')
-        else:
-            req.add_header('os', 'windows')
-            req.add_header('Content-Language', 'zh-cn')
-            req.add_header('User-Agent', 'JumperVPN/1.0.8')
-
-        if imei:
-            req.add_header('imei', imei.strip('{}'))
-            req.add_header('device-name', PC_NAME)
-        if token:
-            req.add_header('j-token', token)
-        if data:
-            req.add_header('Content-Type', 'application/json')
-
-        try:
-            resp = opener.open(req, timeout=15)
-            raw = resp.read()
-            try: raw = __import__('gzip').decompress(raw)
-            except: pass
-            return json.loads(raw.decode('utf-8'))
-        except urllib.error.HTTPError as e:
-            raw = e.read()
-            try: raw = __import__('gzip').decompress(raw)
-            except: pass
-            try: return json.loads(raw.decode('utf-8'))
-            except: return {'code': e.code, 'msg': raw.decode('utf-8','replace')[:200]}
-        except Exception as e:
-            return {'code': -1, 'msg': str(e)[:200]}
-
-    def http_get(self, url, headers=None):
-        req = urllib.request.Request(url)
-        if headers:
-            for k, v in headers.items(): req.add_header(k, v)
-        resp = opener.open(req, timeout=10)
-        return json.loads(resp.read().decode('utf-8'))
-
-    def http_post(self, url, body, headers=None):
-        data = json.dumps(body).encode('utf-8')
-        req = urllib.request.Request(url, data=data, method='POST')
-        req.add_header('Content-Type', 'application/json')
-        if headers:
-            for k, v in headers.items(): req.add_header(k, v)
-        resp = opener.open(req, timeout=10)
-        return json.loads(resp.read().decode('utf-8'))
-
-    def create_temp_email(self, logs):
-        self.log('创建临时邮箱 ...', logs)
-        try:
-            domains = self.http_get(f'{MAIL_TM}/domains')
-            if isinstance(domains, list):
-                domain = domains[0].get('domain', 'deltajohnsons.com')
-            else:
-                domain = domains.get('hydra:member', [{}])[0].get('domain', 'deltajohnsons.com')
-
-            username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
-            email = f'{username}@{domain}'
-            mail_pwd = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-
-            self.http_post(f'{MAIL_TM}/accounts', {'address': email, 'password': mail_pwd})
-            self.log(f'邮箱: {email}', logs)
-        except urllib.error.HTTPError as e:
-            err = e.read().decode('utf-8','replace')[:200]
-            self.log(f'❌ 创建邮箱失败: {err}', logs)
-            return None, None, None
-
-        try:
-            token_result = self.http_post(f'{MAIL_TM}/token', {'address': email, 'password': mail_pwd})
-            mail_token = token_result.get('token', '')
-            if not mail_token:
-                self.log('❌ mail token 获取失败', logs)
-                return None, None, None
-        except urllib.error.HTTPError as e:
-            self.log(f'❌ mail token 失败: {e.read().decode("utf-8","replace")[:200]}', logs)
-            return None, None, None
-
-        return email, mail_pwd, mail_token
-
-    def wait_for_code(self, mail_token, logs, max_wait=90):
-        self.log(f'等待验证码 (最多{max_wait}秒)...', logs)
-        start = time.time()
-        while time.time() - start < max_wait:
-            try:
-                messages = self.http_get(f'{MAIL_TM}/messages',
-                    headers={'Authorization': f'Bearer {mail_token}'})
-                msg_list = messages.get('hydra:member', []) if isinstance(messages, dict) else messages
-                for msg in msg_list:
-                    msg_id = msg.get('id', '')
-                    if not msg_id: continue
-                    detail = self.http_get(f'{MAIL_TM}/messages/{msg_id}',
-                        headers={'Authorization': f'Bearer {mail_token}'})
-                    body_text = detail.get('text', '') or detail.get('html', '') or ''
-                    match = re.search(r'(?:验证码|code|Code|CODE)[：:\s]*(\d{4,6})', body_text)
-                    if not match:
-                        match = re.search(r'\b(\d{4,6})\b', body_text)
-                    if match:
-                        code = match.group(1)
-                        self.log(f'✅ 验证码: {code}', logs)
-                        return code
-            except: pass
-            time.sleep(3)
-        self.log('❌ 等待验证码超时', logs)
-        return None
-
-    def register(self, config, session_data):
-        logs = session_data['logs']
-        try:
-            self.log('[1/6] device/init ...', logs)
-            imei = '{' + str(uuid.uuid4()).upper() + '}'
-            result = self.api_call('device/init', imei=imei, mode=config['mode'])
-            if result.get('code') != 200:
-                self.log(f'❌ device/init 失败: {result}', logs)
-                session_data['done'] = True
-                session_data['success'] = False
-                session_data['error'] = 'device/init 失败'
-                return
-            device_token = result['data']['user_info']['token']
-            self.log(f'✅ device token OK', logs)
-
-            self.log('[2/6] 创建临时邮箱 ...', logs)
-            email, mail_pwd, mail_token = self.create_temp_email(logs)
-            if not email:
-                session_data['done'] = True
-                session_data['success'] = False
-                session_data['error'] = '创建邮箱失败'
-                return
-
-            self.log(f'[3/6] 发送验证码 → {email} ...', logs)
-            result = self.api_call('user/send_email_code', method='POST',
-                                  body={'email': email, 'type': 10},
-                                  token=device_token, imei=imei, mode=config['mode'])
-            if result.get('code') not in (200, 0):
-                self.log(f'❌ 发送失败: {result}', logs)
-                session_data['done'] = True
-                session_data['success'] = False
-                session_data['error'] = '发送验证码失败'
-                return
-            self.log('✅ 验证码已发送', logs)
-
-            self.log('[4/6] 等待验证码 ...', logs)
-            code = self.wait_for_code(mail_token, logs)
-            if not code:
-                session_data['done'] = True
-                session_data['success'] = False
-                session_data['error'] = '等待验证码超时'
-                return
-
-            pwd_raw = config['pwd']
-            pwd_md5 = self.md5(pwd_raw)
-            invite = config['invite']
-            self.log(f'[5/6] 注册 ({email}) ...', logs)
-
-            reg_pwd = None
-            reg_result = None
-            for pwd_attempt, label in [(pwd_md5, 'MD5'), (pwd_raw, '明文')]:
-                result = self.api_call('user/signup', method='POST',
-                                      body={'email': email, 'password': pwd_attempt,
-                                            'repassword': pwd_attempt, 'code': code,
-                                            'invite_code': invite},
-                                      token=device_token, imei=imei, mode=config['mode'])
-                if result.get('code') in (200, 0):
-                    reg_pwd = pwd_attempt
-                    reg_result = result
-                    self.log(f'  ✅ 注册成功 (密码格式: {label})', logs)
-                    break
-                self.log(f'  {label}失败: {result.get("message","")}', logs)
-            if not reg_pwd:
-                self.log('❌ 两种密码格式都注册失败', logs)
-                session_data['done'] = True
-                session_data['success'] = False
-                session_data['error'] = '注册失败'
-                return
-
-            data = reg_result.get('data', {})
-            reg_user = data.get('user_info', {})
-            free = reg_user.get('free_remaining_time', 0)
-            end = reg_user.get('free_end_time', '')
-            h, m = free // 3600, (free % 3600) // 60
-            free_time = f'{h}小时{m}分'
-            self.log(f'✅ 注册成功! {free_time} | 到期: {end}', logs)
-
-            self.log('[6/6] 获取登录Token ...', logs)
-            login_token = None
-            for pwd_attempt, label in [(pwd_md5, 'MD5'), (pwd_raw, '明文')]:
-                login_result = self.api_call('user/signin', method='POST',
-                                            body={'email': email, 'password': pwd_attempt},
-                                            token=device_token, imei=imei, mode=config['mode'])
-                if login_result.get('code') in (200, 0):
-                    login_token = login_result.get('data', {}).get('user_info', {}).get('token', '')
-                    if login_token:
-                        self.log(f'  ✅ 登录成功 (密码格式: {label})', logs)
-                        break
-            if not login_token:
-                login_token = reg_user.get('token', device_token)
-                self.log('  ⚠ 登录失败，用注册 token', logs)
-
-            session_data['done'] = True
-            session_data['success'] = True
-            session_data['result'] = {
-                'email': email,
-                'pwd': pwd_raw,
-                'free_time': free_time,
-                'end_time': end,
-                'token': login_token
-            }
-
-        except Exception as e:
-            self.log(f'❌ 异常: {e}', logs)
-            import traceback
-            self.log(traceback.format_exc()[:500], logs)
-            session_data['done'] = True
-            session_data['success'] = False
-            session_data['error'] = str(e)
-
-jumper = JumperRegister()
-
-@app.route('/')
-def index():
-    return render_template_string(HTML_TEMPLATE)
-
-@app.route('/api/register', methods=['POST'])
-def api_register():
-    session_id = str(uuid.uuid4())
-    sessions[session_id] = {
-        'logs': [],
-        'done': False,
-        'success': False,
-        'error': None,
-        'result': None
-    }
-    config = request.json
-    threading.Thread(target=jumper.register, args=(config, sessions[session_id]), daemon=True).start()
-    return jsonify({'success': True, 'session_id': session_id})
-
-@app.route('/api/status/<session_id>')
-def api_status(session_id):
-    session_data = sessions.get(session_id, {
-        'logs': [],
-        'done': True,
-        'success': False,
-        'error': 'Session not found',
-        'result': None
-    })
-    return jsonify({
-        'logs': session_data['logs'],
-        'done': session_data['done'],
-        'success': session_data.get('success', False),
-        'error': session_data.get('error'),
-        'result': session_data.get('result')
-    })
-
-if __name__ == '__main__':
-    print('注册器启动中...')
-    print('请在浏览器中访问: http://127.0.0.1:5000')
-    app.run(host='0.0.0.0', port=5000, debug=False)
