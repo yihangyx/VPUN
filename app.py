@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JumperVPN 纯API注册版 - 可部署"""
+
 import json, time, hashlib, hmac, uuid, base64, re, random, string
 import urllib.request, urllib.error, ssl
 from datetime import datetime
@@ -27,7 +27,7 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumperVPN 注册器</title>
+    <title>奕涵</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -341,19 +341,19 @@ HTML_TEMPLATE = '''
         <div class="header">
             <div class="header-content">
                 <h1>🚀 JumperVPN</h1>
-                <p>一键注册 · 免费时长</p>
+                <p>注册</p>
             </div>
         </div>
         <div class="content">
             <form id="registerForm">
                 <div class="form-group">
-                    <label>📧 邮箱（登录用）</label>
+                    <label>📧 邮箱</label>
                     <div class="input-wrapper">
                         <input type="text" id="login_email" placeholder="注册成功后自动填充">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>🔐 密码（登录用）</label>
+                    <label>🔐 密码</label>
                     <div class="input-wrapper">
                         <input type="text" id="login_pwd" placeholder="注册成功后自动填充">
                     </div>
@@ -404,7 +404,7 @@ HTML_TEMPLATE = '''
                     </span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">免费时长</span>
+                    <span class="info-label">时长</span>
                     <span class="info-value" id="res_free"></span>
                 </div>
                 <div class="info-item">
@@ -425,7 +425,7 @@ HTML_TEMPLATE = '''
             </div>
 
             <div class="device-info">
-                💡 每次注册都会使用新设备标识
+                
             </div>
         </div>
     </div>
@@ -866,6 +866,6 @@ def api_status(session_id):
     })
 
 if __name__ == '__main__':
-    print('JumperVPN 注册器启动中...')
+    print('注册器启动中...')
     print('请在浏览器中访问: http://127.0.0.1:5000')
     app.run(host='0.0.0.0', port=5000, debug=False)
