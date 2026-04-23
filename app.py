@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JumperVPN 纯API注册版 - 可部署"""
+
 import json, time, hashlib, hmac, uuid, base64, re, random, string
 import urllib.request, urllib.error, ssl
 from datetime import datetime
@@ -27,566 +27,380 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumperVPN 注册器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Jumper 注册工具</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%); 
-            min-height: 100vh; 
-            padding: 40px 20px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             color: white;
-        }
-        .container { 
-            max-width: 480px; 
-            margin: 0 auto; 
-            background: rgba(30, 30, 60, 0.95); 
-            border-radius: 24px; 
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5); 
-            overflow: hidden;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .header { 
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%); 
-            padding: 32px 24px; 
+            padding: 30px 24px;
             text-align: center;
-            position: relative;
-            overflow: hidden;
         }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.3; }
-        }
-        .header-content {
-            position: relative;
-            z-index: 1;
-        }
-        .header h1 { 
-            font-size: 36px; 
-            margin-bottom: 8px;
+
+        .card-header h1 {
+            font-size: 26px;
             font-weight: 700;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            margin-bottom: 8px;
         }
-        .header p {
+
+        .card-header p {
             font-size: 14px;
             opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .card-body {
+            padding: 30px 28px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 500;
+            font-size: 15px;
+            color: #1e293b;
         }
-        .content { 
-            padding: 32px 24px; 
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.25s ease;
+            background: #fafbfc;
         }
-        .form-group { 
-            margin-bottom: 24px; 
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
         }
-        label { 
-            display: block; 
-            font-weight: 600; 
-            color: #e5e7eb; 
-            margin-bottom: 10px; 
-            font-size: 14px;
+
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 6px;
         }
-        .input-wrapper {
-            position: relative;
-        }
-        input[type="text"] { 
-            width: 100%; 
-            padding: 16px 20px; 
-            border: 2px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 14px; 
-            font-size: 15px; 
-            transition: all 0.3s;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-        input[type="text"]:focus { 
-            outline: none; 
-            border-color: #00d4ff;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
-        }
-        input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-        .radio-group { 
-            display: flex; 
-            gap: 12px; 
-            margin-top: 10px; 
-        }
-        .radio-item { 
+
+        .radio-item {
             flex: 1;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            gap: 8px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            color: #e5e7eb;
+            transition: all 0.2s;
+            background: #fafbfc;
         }
+
         .radio-item:hover {
-            border-color: rgba(124, 58, 237, 0.5);
-            background: rgba(124, 58, 237, 0.1);
+            border-color: #cbd5e1;
         }
+
+        .radio-item.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
         .radio-item input {
-            margin: 0;
-            accent-color: #00d4ff;
+            display: none;
         }
-        .radio-item.selected {
-            border-color: #00d4ff;
-            background: rgba(0, 212, 255, 0.1);
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .btn { 
-            width: 100%; 
-            padding: 18px; 
-            border: none; 
-            border-radius: 14px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 600; 
-            transition: all 0.3s;
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
-        .btn:disabled { 
-            opacity: 0.5; 
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
-        .btn-primary { 
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%); 
-            color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
-        }
-        .btn-primary:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.6);
-        }
+
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: #f1f5f9;
+            color: #334155;
             margin-top: 12px;
         }
-        .btn-secondary:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.15);
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
         }
-        .result-card { 
-            margin-top: 28px; 
-            padding: 24px; 
-            border-radius: 18px; 
-            background: rgba(16, 185, 129, 0.15); 
-            border: 2px solid rgba(16, 185, 129, 0.4); 
+
+        .loading {
             display: none;
-            animation: slideIn 0.4s ease-out;
+            text-align: center;
+            padding: 30px 0;
         }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+
+        .spinner {
+            width: 44px;
+            height: 44px;
+            border: 4px solid #f1f5f9;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
         }
-        .result-card.error { 
-            background: rgba(239, 68, 68, 0.15); 
-            border-color: rgba(239, 68, 68, 0.4); 
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .result-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .result-header h3 {
-            font-size: 20px;
-            color: white;
-        }
-        .info-item { 
-            display: flex; 
-            flex-direction: column;
-            padding: 16px; 
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            margin-bottom: 14px;
-        }
-        .info-label { 
-            font-weight: 600; 
-            color: rgba(255, 255, 255, 0.6); 
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-        .info-value { 
-            color: white; 
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            word-break: break-all;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .copy-btn {
-            padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            color: white;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-        .token-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .token-display {
-            flex: 1;
-            font-family: 'Consolas', 'Monaco', monospace;
+
+        .log-box {
+            display: none;
+            margin-top: 24px;
+            background: #0f172a;
+            color: #10b981;
+            padding: 18px;
+            border-radius: 12px;
+            font-family: Consolas, monospace;
             font-size: 13px;
-            word-break: break-all;
+            max-height: 280px;
+            overflow-y: auto;
+            line-height: 1.6;
         }
-        .log-box { 
-            margin-top: 28px; 
-            background: rgba(0, 0, 0, 0.4); 
-            color: #10b981; 
-            padding: 20px; 
-            border-radius: 14px; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-size: 13px; 
-            height: 300px; 
-            overflow-y: auto; 
-            line-height: 1.8;
-            display: none;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .log-box::-webkit-scrollbar {
-            width: 8px;
-        }
-        .log-box::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-        }
-        .log-box::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-        }
-        .log-entry { 
+
+        .log-entry {
             margin-bottom: 4px;
         }
-        .loading { 
-            display: none; 
-            text-align: center; 
-            padding: 28px;
-        }
-        .spinner { 
-            border: 4px solid rgba(255, 255, 255, 0.1); 
-            border-top: 4px solid #00d4ff; 
-            border-radius: 50%; 
-            width: 56px; 
-            height: 56px; 
-            animation: spin 1s linear infinite; 
-            margin: 0 auto 18px;
-        }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
-        .loading p {
-            color: #e5e7eb;
-            font-weight: 500;
-        }
-        .device-info {
-            margin-top: 20px;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
-        }
-        
-        /* Modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+
+        .result {
             display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-            animation: fadeIn 0.3s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .modal-overlay.active {
-            display: flex;
-        }
-        .modal {
-            background: linear-gradient(135deg, #1e1e3c 0%, #0d1b2a 100%);
-            border-radius: 24px;
-            max-width: 450px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: modalIn 0.4s ease-out;
-        }
-        @keyframes modalIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        .modal-header {
-            text-align: center;
-            margin-bottom: 28px;
-        }
-        .modal-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 32px;
-            animation: bounce 0.6s ease-out;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 6px;
-        }
-        .modal-subtitle {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
-        }
-        .modal-content {
-            margin-bottom: 28px;
-        }
-        .modal-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 24px;
+            padding: 22px;
             border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            animation: slideUp 0.3s ease;
         }
-        .modal-item-label {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
+
+        .result.success {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .result.error {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-row {
+            margin-bottom: 14px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            font-weight: 600;
+            letter-spacing: 0.3px;
         }
-        .modal-item-value {
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 500;
+            color: #1e293b;
+            word-break: break-all;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
         }
-        .modal-item-text {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            color: white;
-            word-break: break-all;
-            flex: 1;
-        }
-        .modal-btn {
-            padding: 10px 16px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+
+        .copy-btn {
+            padding: 6px 10px;
+            background: #f1f5f9;
             border: none;
-            border-radius: 10px;
-            color: white;
+            border-radius: 6px;
             font-size: 12px;
-            font-weight: 600;
+            color: #334155;
             cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            transition: 0.2s;
         }
-        .modal-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+
+        .copy-btn:hover {
+            background: #e2e8f0;
         }
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-        }
-        .modal-close-btn {
+
+        .token-display {
             flex: 1;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.1);
+            padding-right: 8px;
+        }
+
+        .toggle-btn {
+            background: none;
             border: none;
-            border-radius: 14px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
+            color: #3b82f6;
+            font-size: 13px;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        .modal-close-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        .modal-copy-all-btn {
-            flex: 1;
-            padding: 16px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
-            border: none;
-            border-radius: 14px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .modal-copy-all-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+            padding: 0 8px;
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <h1>🚀 JumperVPN</h1>
-                <p>一键注册 · 免费时长</p>
-            </div>
+    <div class="card">
+        <div class="card-header">
+            <h1>🚀 Jumper 注册工具</h1>
+            <p>一键注册 · 自动获取Token</p>
         </div>
-        <div class="content">
+
+        <div class="card-body">
             <form id="registerForm">
                 <div class="form-group">
-                    <label>⚙️ 设备模式</label>
+                    <div class="form-label">📧 邮箱</div>
+                    <input type="text" id="login_email" class="form-input" placeholder="自动生成" readonly>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label">🔐 密码</div>
+                    <input type="text" id="login_pwd" class="form-input" placeholder="自动生成" readonly>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label">🎫 邀请码</div>
+                    <input type="text" id="invite" class="form-input" value="9QGE5V" placeholder="请输入邀请码">
+                </div>
+
+                <div class="form-group">
+                    <div class="form-label">⚙️ 设备模式</div>
                     <div class="radio-group">
-                        <label class="radio-item selected" id="radio_ios">
-                            <input type="radio" name="mode" id="mode_ios" value="ios" checked>
-                            iOS
+                        <label class="radio-item active">
+                            <input type="radio" name="mode" value="ios" checked> iOS
                         </label>
-                        <label class="radio-item" id="radio_windows">
-                            <input type="radio" name="mode" id="mode_windows" value="windows">
-                            Windows
+                        <label class="radio-item">
+                            <input type="radio" name="mode" value="windows"> Windows
                         </label>
                     </div>
                 </div>
+
                 <button type="submit" class="btn btn-primary" id="submitBtn">✨ 开始注册</button>
             </form>
 
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>正在注册中，请稍候...</p>
+                <p>正在处理中，请稍候...</p>
             </div>
 
             <div class="log-box" id="log_box"></div>
 
-            <div class="result-card" id="result_card">
-                <div class="result-header">
-                    <h3 id="result_title">✅ 注册成功！</h3>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">邮箱</span>
-                    <span class="info-value">
+            <div class="result" id="result_card">
+                <div class="result-title" id="result_title">✅ 注册成功</div>
+
+                <div class="info-row">
+                    <div class="info-label">邮箱</div>
+                    <div class="info-value">
                         <span id="res_email"></span>
                         <button class="copy-btn" onclick="copyText('res_email')">复制</button>
-                    </span>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">密码</span>
-                    <span class="info-value">
+
+                <div class="info-row">
+                    <div class="info-label">密码</div>
+                    <div class="info-value">
                         <span id="res_pwd"></span>
                         <button class="copy-btn" onclick="copyText('res_pwd')">复制</button>
-                    </span>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">免费时长</span>
-                    <span class="info-value" id="res_free"></span>
+
+                <div class="info-row">
+                    <div class="info-label">免费时长</div>
+                    <div class="info-value" id="res_free"></div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">到期时间</span>
-                    <span class="info-value" id="res_end"></span>
+
+                <div class="info-row">
+                    <div class="info-label">到期时间</div>
+                    <div class="info-value" id="res_end"></div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">JWT Token</span>
-                    <span class="info-value">
-                        <span class="token-wrapper" style="flex: 1;">
-                            <span class="token-display" id="res_token"></span>
-                            <button class="copy-btn" onclick="toggleToken()" id="token_toggle">显示</button>
-                        </span>
+
+                <div class="info-row">
+                    <div class="info-label">JWT Token</div>
+                    <div class="info-value">
+                        <span class="token-display" id="res_token">••••••••••••</span>
+                        <button class="toggle-btn" onclick="toggleToken()">显示</button>
                         <button class="copy-btn" onclick="copyText('res_token')">复制</button>
-                    </span>
+                    </div>
                 </div>
+
                 <button class="btn btn-secondary" onclick="resetForm()">🔄 重新注册</button>
-            </div>
-
-            <div class="device-info">
-                💡 每次注册都会使用新设备标识
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-icon">🎉</div>
-                <div class="modal-title">注册成功！</div>
-                <div class="modal-subtitle">请保存好您的账号信息</div>
-            </div>
-            <div class="modal-content">
-                <div class="modal-item">
-                    <div class="modal-item-label">邮箱</div>
-                    <div class="modal-item-value">
-                        <span class="modal-item-text" id="modalEmail"></span>
-                        <button class="modal-btn" onclick="copyToClipboard(document.getElementById('modalEmail').textContent, this)">复制</button>
-                    </div>
-                </div>
-                <div class="modal-item">
-                    <div class="modal-item-label">密码</div>
-                    <div class="modal-item-value">
-                        <span class="modal-item-text" id="modalPassword"></span>
-                        <button class="modal-btn" onclick="copyToClipboard(document.getElementById('modalPassword').textContent, this)">复制</button>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-copy-all-btn" onclick="copyAll()">📋 复制全部</button>
-                <button class="modal-close-btn" onclick="closeModal()">关闭</button>
             </div>
         </div>
     </div>
@@ -597,42 +411,23 @@ HTML_TEMPLATE = '''
         let tokenHidden = true;
         let currentResult = null;
 
-        // Radio button styling
-        document.querySelectorAll('input[name="mode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.querySelectorAll('.radio-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                this.parentElement.classList.add('selected');
+        document.querySelectorAll('.radio-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.radio-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                item.querySelector('input').checked = true;
             });
         });
 
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        document.getElementById('registerForm').addEventListener('submit', e => {
             e.preventDefault();
             startRegister();
         });
 
-        function generatePassword() {
-            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const numbers = '0123456789';
-            const allChars = lowercase + uppercase + numbers;
-            
-            let password = '';
-            password += uppercase[Math.floor(Math.random() * uppercase.length)];
-            password += lowercase[Math.floor(Math.random() * lowercase.length)];
-            password += numbers[Math.floor(Math.random() * numbers.length)];
-            
-            for (let i = 0; i < 9; i++) {
-                password += allChars[Math.floor(Math.random() * allChars.length)];
-            }
-            
-            return password.split('').sort(() => 0.5 - Math.random()).join('');
-        }
-
         function startRegister() {
             const config = {
-                pwd: generatePassword(),
+                invite: document.getElementById('invite').value.trim(),
+                pwd: document.getElementById('login_pwd').value || 'Xiangzi6681',
                 mode: document.querySelector('input[name="mode"]:checked').value
             };
 
@@ -650,152 +445,90 @@ HTML_TEMPLATE = '''
                     sessionId = data.session_id;
                     pollInterval = setInterval(pollStatus, 500);
                 } else {
-                    showError(data.error);
+                    showError(data.error || '请求失败');
                 }
             }).catch(err => {
-                showError('请求失败: ' + err);
+                showError('网络错误：' + err.message);
             });
         }
 
         function pollStatus() {
-            fetch('/api/status/' + sessionId).then(r => r.json()).then(data => {
-                updateLogs(data.logs);
-                
-                if (data.done) {
-                    clearInterval(pollInterval);
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('submitBtn').disabled = false;
-                    
-                    if (data.success) {
-                        showResult(data.result);
-                        showModal(data.result);
-                    } else {
-                        showError(data.error);
+            fetch('/api/status/' + sessionId)
+                .then(r => r.json())
+                .then(data => {
+                    updateLogs(data.logs);
+                    if (data.done) {
+                        clearInterval(pollInterval);
+                        document.getElementById('loading').style.display = 'none';
+                        document.getElementById('submitBtn').disabled = false;
+                        data.success ? showResult(data.result) : showError(data.error);
                     }
-                }
-            });
+                });
         }
 
         function updateLogs(logs) {
-            const logBox = document.getElementById('log_box');
-            logBox.innerHTML = logs.map(log => '<div class="log-entry">' + log + '</div>').join('');
-            logBox.scrollTop = logBox.scrollHeight;
+            const box = document.getElementById('log_box');
+            box.innerHTML = logs.map(l => `<div class="log-entry">${l}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
         }
 
         function showResult(result) {
             currentResult = result;
             tokenHidden = true;
-            
+            document.getElementById('login_email').value = result.email;
+            document.getElementById('login_pwd').value = result.pwd;
             const card = document.getElementById('result_card');
             card.style.display = 'block';
-            card.classList.remove('error');
-            document.getElementById('result_title').textContent = '✅ 注册成功！';
+            card.className = 'result success';
+            document.getElementById('result_title').innerHTML = '✅ 注册成功';
             document.getElementById('res_email').textContent = result.email;
             document.getElementById('res_pwd').textContent = result.pwd;
             document.getElementById('res_free').textContent = result.free_time;
             document.getElementById('res_end').textContent = result.end_time;
-            
-            // Token默认隐藏
-            document.getElementById('res_token').textContent = '••••••••••••••••••••';
-            document.getElementById('token_toggle').textContent = '显示';
+            document.getElementById('res_token').textContent = '••••••••••••';
         }
 
-        function showError(error) {
+        function showError(msg) {
             const card = document.getElementById('result_card');
             card.style.display = 'block';
-            card.classList.add('error');
-            document.getElementById('result_title').textContent = '❌ 注册失败';
-            document.getElementById('res_email').textContent = error;
+            card.className = 'result error';
+            document.getElementById('result_title').innerHTML = '❌ 注册失败';
+            document.getElementById('res_email').textContent = msg;
             document.getElementById('res_pwd').textContent = '';
             document.getElementById('res_free').textContent = '';
             document.getElementById('res_end').textContent = '';
             document.getElementById('res_token').textContent = '';
         }
 
-        function showModal(result) {
-            document.getElementById('modalEmail').textContent = result.email;
-            document.getElementById('modalPassword').textContent = result.pwd;
-            document.getElementById('modalOverlay').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-        }
-
-        function copyToClipboard(text, btn) {
-            navigator.clipboard.writeText(text).then(() => {
-                if (btn) {
-                    const original = btn.textContent;
-                    btn.textContent = '已复制!';
-                    setTimeout(() => {
-                        btn.textContent = original;
-                    }, 1500);
-                }
-            });
-        }
-
-        function copyAll() {
-            const email = document.getElementById('modalEmail').textContent;
-            const password = document.getElementById('modalPassword').textContent;
-            const text = '邮箱: ' + email + '\\n密码: ' + password;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.modal-copy-all-btn');
-                const original = btn.textContent;
-                btn.textContent = '✅ 已复制全部!';
-                setTimeout(() => {
-                    btn.textContent = original;
-                }, 1500);
-            });
-        }
-
         function toggleToken() {
-            const tokenEl = document.getElementById('res_token');
-            const toggleBtn = document.getElementById('token_toggle');
-            if (tokenHidden && currentResult) {
-                tokenEl.textContent = currentResult.token;
-                toggleBtn.textContent = '隐藏';
+            if (!currentResult) return;
+            const el = document.getElementById('res_token');
+            const btn = document.querySelector('.toggle-btn');
+            if (tokenHidden) {
+                el.textContent = currentResult.token;
+                btn.textContent = '隐藏';
             } else {
-                tokenEl.textContent = '••••••••••••••••••••';
-                toggleBtn.textContent = '显示';
+                el.textContent = '••••••••••••';
+                btn.textContent = '显示';
             }
             tokenHidden = !tokenHidden;
         }
 
-        function copyText(elementId) {
-            let text = '';
-            if (elementId === 'res_token' && tokenHidden && currentResult) {
-                text = currentResult.token;
-            } else {
-                text = document.getElementById(elementId).textContent;
-            }
-            
+        function copyText(id) {
+            let text = id === 'res_token' && tokenHidden ? currentResult?.token || '' : document.getElementById(id).textContent;
             navigator.clipboard.writeText(text).then(() => {
                 const btn = event.target;
-                const original = btn.textContent;
-                btn.textContent = '已复制!';
-                setTimeout(() => {
-                    btn.textContent = original;
-                }, 1500);
-            }).catch(err => {
-                alert('复制失败: ' + err);
+                const ori = btn.textContent;
+                btn.textContent = '已复制';
+                setTimeout(() => btn.textContent = ori, 1500);
             });
         }
 
         function resetForm() {
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'none';
-            document.getElementById('log_box').innerHTML = '';
             currentResult = null;
-            tokenHidden = true;
         }
-
-        // Close modal on overlay click
-        document.getElementById('modalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
     </script>
 </body>
 </html>
@@ -814,7 +547,7 @@ class JumperRegister:
         return hashlib.md5(text.encode('utf-8')).hexdigest()
 
     def make_sign(self, path):
-        return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256()).hexdigest()
+        return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256).hexdigest()
 
     def api_call(self, path, method='GET', body=None, token=None, imei=None, mode='ios'):
         url = BASE + path.lstrip('/')
@@ -982,15 +715,16 @@ class JumperRegister:
 
             pwd_raw = config['pwd']
             pwd_md5 = self.md5(pwd_raw)
+            invite = config['invite']
             self.log(f'[5/6] 注册 ({email}) ...', logs)
-            self.log(f'密码: {pwd_raw}', logs)
 
             reg_pwd = None
             reg_result = None
             for pwd_attempt, label in [(pwd_md5, 'MD5'), (pwd_raw, '明文')]:
                 result = self.api_call('user/signup', method='POST',
                                       body={'email': email, 'password': pwd_attempt,
-                                            'repassword': pwd_attempt, 'code': code},
+                                            'repassword': pwd_attempt, 'code': code,
+                                            'invite_code': invite},
                                       token=device_token, imei=imei, mode=config['mode'])
                 if result.get('code') in (200, 0):
                     reg_pwd = pwd_attempt
@@ -1084,6 +818,6 @@ def api_status(session_id):
     })
 
 if __name__ == '__main__':
-    print('JumperVPN 注册器启动中...')
+    print('注册器启动中...')
     print('请在浏览器中访问: http://127.0.0.1:5000')
     app.run(host='0.0.0.0', port=5000, debug=False)
