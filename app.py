@@ -813,12 +813,8 @@ class JumperRegister:
     def md5(self, text):
         return hashlib.md5(text.encode('utf-8')).hexdigest()
 
-    # ✅ 修复：标准 HMAC-SHA256 签名写法
     def make_sign(self, path):
-        key = SIGN_KEY.encode('utf-8')
-        msg = path.encode('utf-8')
-        sign = hmac.new(key, msg, hashlib.sha256).hexdigest()
-        return sign
+        return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256).hexdigest()
 
     def api_call(self, path, method='GET', body=None, token=None, imei=None, mode='ios'):
         url = BASE + path.lstrip('/')
@@ -855,29 +851,22 @@ class JumperRegister:
         try:
             resp = opener.open(req, timeout=15)
             raw = resp.read()
-            try: 
-                raw = __import__('gzip').decompress(raw)
-            except: 
-                pass
+            try: raw = __import__('gzip').decompress(raw)
+            except: pass
             return json.loads(raw.decode('utf-8'))
         except urllib.error.HTTPError as e:
             raw = e.read()
-            try: 
-                raw = __import__('gzip').decompress(raw)
-            except: 
-                pass
-            try: 
-                return json.loads(raw.decode('utf-8'))
-            except: 
-                return {'code': e.code, 'msg': raw.decode('utf-8','replace')[:200]}
+            try: raw = __import__('gzip').decompress(raw)
+            except: pass
+            try: return json.loads(raw.decode('utf-8'))
+            except: return {'code': e.code, 'msg': raw.decode('utf-8','replace')[:200]}
         except Exception as e:
             return {'code': -1, 'msg': str(e)[:200]}
 
     def http_get(self, url, headers=None):
         req = urllib.request.Request(url)
         if headers:
-            for k, v in headers.items(): 
-                req.add_header(k, v)
+            for k, v in headers.items(): req.add_header(k, v)
         resp = opener.open(req, timeout=10)
         return json.loads(resp.read().decode('utf-8'))
 
@@ -886,8 +875,7 @@ class JumperRegister:
         req = urllib.request.Request(url, data=data, method='POST')
         req.add_header('Content-Type', 'application/json')
         if headers:
-            for k, v in headers.items(): 
-                req.add_header(k, v)
+            for k, v in headers.items(): req.add_header(k, v)
         resp = opener.open(req, timeout=10)
         return json.loads(resp.read().decode('utf-8'))
 
@@ -944,8 +932,7 @@ class JumperRegister:
                         code = match.group(1)
                         self.log(f'✅ 验证码: {code}', logs)
                         return code
-            except: 
-                pass
+            except: pass
             time.sleep(3)
         self.log('❌ 等待验证码超时', logs)
         return None
