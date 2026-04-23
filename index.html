@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JumperVPN 注册工具</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .container { background: #16213e; border-radius: 16px; padding: 32px; width: 100%; max-width: 520px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  h1 { text-align: center; color: #00d4ff; font-size: 1.6em; margin-bottom: 24px; font-weight: 700; letter-spacing: 2px; }
+  .section { margin-bottom: 20px; }
+  .section-title { color: #ffd700; font-size: 0.95em; margin-bottom: 12px; font-weight: 600; }
+  label { display: block; color: #a0a0c0; font-size: 0.85em; margin-bottom: 6px; }
+  input { width: 100%; padding: 10px 14px; background: #0f3460; border: 1px solid #1e5a8a; border-radius: 8px; color: #fff; font-size: 1em; outline: none; transition: border-color 0.2s; }
+  input:focus { border-color: #00d4ff; }
+  input:read-only { opacity: 0.6; cursor: not-allowed; }
+  .row { display: flex; gap: 10px; }
+  .row label { flex: 1; }
+  .row input { flex: 1; }
+  .btn-group { display: flex; flex-direction: column; gap: 10px; }
+  button { padding: 14px; border: none; border-radius: 10px; font-size: 1.05em; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: linear-gradient(135deg, #00d4ff, #0077cc); color: #fff; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,212,255,0.3); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary { background: #0f3460; color: #a0a0c0; border: 1px solid #1e5a8a; }
+  .btn-secondary:hover { border-color: #00d4ff; color: #00d4ff; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+  .log-box { background: #0a0a1a; border: 1px solid #1e3a5a; border-radius: 10px; padding: 12px; margin-top: 16px; max-height: 340px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.82em; line-height: 1.6; color: #6ecf6e; white-space: pre-wrap; word-break: break-all; }
+  .log-box .err { color: #ff6b6b; }
+  .log-box .info { color: #00d4ff; }
+  .log-box .warn { color: #ffd700; }
+  .log-box .ok { color: #4ecdc4; }
+  .log-box .step { color: #f9ca24; font-weight: 700; }
+  .progress-bar { height: 3px; background: #0f3460; border-radius: 2px; margin-top: 10px; overflow: hidden; display: none; }
+  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #00d4ff, #0077cc); width: 0%; transition: width 0.3s; }
+  .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e3a5a; font-size: 0.9em; }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .key { color: #a0a0c0; }
+  .info-row .val { color: #4ecdc4; font-weight: 600; }
+  .result-box { background: #0f3460; border-radius: 10px; padding: 16px; margin-top: 12px; display: none; }
+  .result-box.show { display: block; }
+  .copy-btn { background: none; border: 1px solid #1e5a8a; color: #00d4ff; padding: 4px 12px; border-radius: 6px; font-size: 0.8em; cursor: pointer; margin-top: 8px; }
+  .copy-btn:hover { background: #00d4ff22; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🚀 JumperVPN 注册工具</h1>
+
+  <div class="section">
+    <div class="section-title">⚙️ 配置</div>
+    <div class="row" style="margin-bottom: 10px;">
+      <label>邀请码
+        <input id="inviteCode" value="9QGE5V" placeholder="邀请码">
+      </label>
+      <label>密码
+        <input id="pwd" value="Xiangzi6681" type="text" placeholder="密码">
+      </label>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn-primary" id="btnRegister" onclick="doRegister()">🚀 一键注册 (24h)</button>
+    <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="log-box" id="logBox">点击「一键注册」开始...\n</div>
+
+  <div class="result-box" id="resultBox">
+    <div class="section-title" style="margin-top:12px;">📋 注册结果</div>
+    <div id="resultContent"></div>
+    <button class="copy-btn" onclick="copyResult()">📋 复制账号信息</button>
+  </div>
+</div>
+
+<script src="lib/api.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let gResult = null;
+
+function log(msg, type = '') {
+  const box = $('logBox');
+  const cls = type ? ` ${type}` : '';
+  const ts = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+  box.innerHTML += `<span class="${cls}">[${ts}] ${msg}</span>\n`;
+  box.scrollTop = box.scrollHeight;
+}
+
+function setProgress(pct) {
+  const bar = $('progressBar');
+  const fill = $('progressFill');
+  if (pct <= 0) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  fill.style.width = pct + '%';
+}
+
+function showResult(info) {
+  gResult = info;
+  const c = $('resultContent');
+  c.innerHTML = `
+    <div class="info-row"><span class="key">邮箱</span><span class="val">${info.email}</span></div>
+    <div class="info-row"><span class="key">密码</span><span class="val">${info.pwd}</span></div>
+    <div class="info-row"><span class="key">剩余时间</span><span class="val">${info.hours}h ${info.mins}m</span></div>
+    <div class="info-row"><span class="key">到期时间</span><span class="val">${info.endTime}</span></div>
+    <div class="info-row"><span class="key">Token</span><span class="val" style="font-size:0.7em;word-break:break-all;">${info.token}</span></div>
+  `;
+  $('resultBox').classList.add('show');
+}
+
+function copyResult() {
+  if (!gResult) return;
+  const text = `邮箱: ${gResult.email}\n密码: ${gResult.pwd}\n剩余: ${gResult.hours}h ${gResult.mins}m\n到期: ${gResult.endTime}`;
+  navigator.clipboard.writeText(text).then(() => alert('已复制!'));
+}
+
+function setButtons(disabled) {
+  $('btnRegister').disabled = disabled;
+}
+
+async function doRegister() {
+  if ($('btnRegister').disabled) return;
+  setButtons(true);
+  $('logBox').innerHTML = '';
+  $('resultBox').classList.remove('show');
+  setProgress(5);
+  log('开始注册流程...', 'info');
+
+  try {
+    // 1. device/init
+    log('[1/5] 初始化设备...', 'step');
+    setProgress(10);
+    const imei = JumperAPI.generateIMEI();
+    log(`  IMEI: ${imei}`);
+    const devResult = await JumperAPI.apiCall('device/init', { imei });
+    if (devResult.code !== 200) { log(`❌ device/init 失败: ${JSON.stringify(devResult)}`, 'err'); return; }
+    const deviceToken = devResult.data.user_info.token;
+    log('✅ 设备初始化成功', 'ok');
+    setProgress(20);
+
+    // 2. 创建临时邮箱
+    log('[2/5] 创建临时邮箱...', 'step');
+    let email, mailToken;
+    try {
+      const mail = await JumperAPI.createTempEmail();
+      email = mail.email;
+      mailToken = mail.mailToken;
+      log(`  邮箱: ${email}`, 'ok');
+    } catch (e) {
+      log(`❌ 创建邮箱失败: ${e.message}`, 'err');
+      // 尝试用固定域名兜底
+      log('  重试，使用备用域名...', 'warn');
+      const username = Array.from({length:10}, ()=>'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random()*36)]).join('');
+      email = `${username}@deltajohnsons.com`;
+      const mailPwd = 'Xiangzi6681';
+      await fetch('https://api.mail.tm/accounts', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({address:email, password:mailPwd}) });
+      const tr = await fetch('https://api.mail.tm/token', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({address:email, password:mailPwd}) }).then(r=>r.json());
+      mailToken = tr.token;
+      if (!mailToken) throw new Error('备用邮箱也失败');
+      log(`  备用邮箱: ${email}`, 'ok');
+    }
+    setProgress(30);
+
+    // 3. 发送验证码
+    log(`[3/5] 发送验证码 → ${email}...`, 'step');
+    const sendResult = await JumperAPI.apiCall('user/send_email_code', {
+      method: 'POST',
+      body: { email, type: 10 },
+      token: deviceToken,
+      imei
+    });
+    if (sendResult.code !== 200 && sendResult.code !== 0) {
+      log(`❌ 发送失败: ${JSON.stringify(sendResult)}`, 'err');
+      return;
+    }
+    log('✅ 验证码已发送', 'ok');
+    setProgress(40);
+
+    // 4. 等待验证码
+    log('[4/5] 等待验证码 (最多90秒)...', 'step');
+    const code = await JumperAPI.waitForCode(mailToken, 90, (sec) => {
+      log(`  ⏳ 已等待 ${sec} 秒...`, 'warn');
+      setProgress(40 + Math.floor(sec / 90 * 30));
+    });
+    if (!code) { log('❌ 等待验证码超时', 'err'); return; }
+    log(`✅ 验证码: ${code}`, 'ok');
+    setProgress(70);
+
+    // 5. 注册
+    log('[5/5] 注册账号...', 'step');
+    const pwdRaw = $('pwd').value || 'Xiangzi6681';
+    const invite = $('inviteCode').value || '9QGE5V';
+    const pwdMD5 = JumperAPI.md5(pwdRaw);
+
+    let regResult = null, regPwd = null;
+    for (const [pwdFmt, label] of [[pwdMD5, 'MD5'], [pwdRaw, '明文']]) {
+      regResult = await JumperAPI.apiCall('user/signup', {
+        method: 'POST',
+        body: { email, password: pwdFmt, repassword: pwdFmt, code, invite_code: invite },
+        token: deviceToken,
+        imei
+      });
+      if (regResult.code === 200 || regResult.code === 0) {
+        regPwd = pwdFmt;
+        log(`  ✅ 注册成功 (密码格式: ${label})`, 'ok');
+        break;
+      }
+      log(`  ${label}失败: ${regResult.message || ''}`, 'warn');
+    }
+    if (!regPwd) { log('❌ 注册失败（两种密码格式都不行）', 'err'); return; }
+
+    const userInfo = regResult.data.user_info || {};
+    const free = userInfo.free_remaining_time || 0;
+    const end = userInfo.free_end_time || '';
+    const h = Math.floor(free / 3600);
+    const m = Math.floor((free % 3600) / 60);
+    log(`✅ 注册成功！剩余 ${h}h ${m}m | 到期: ${end}`, 'ok');
+    setProgress(85);
+
+    // 6. API 登录确认
+    log('[6/6] API 登录验证...', 'step');
+    let loginToken = userInfo.token || '';
+    for (const [pwdFmt, label] of [[pwdMD5, 'MD5'], [pwdRaw, '明文']]) {
+      const lr = await JumperAPI.apiCall('user/signin', {
+        method: 'POST',
+        body: { email, password: pwdFmt },
+        token: deviceToken,
+        imei
+      });
+      if (lr.code === 200 || lr.code === 0) {
+        loginToken = lr.data.user_info?.token || loginToken;
+        log(`  ✅ 登录验证成功 (${label})`, 'ok');
+        break;
+      }
+    }
+    setProgress(100);
+    log('🎉 全部完成！', 'ok');
+
+    showResult({ email, pwd: pwdRaw, token: loginToken, hours: h, mins: m, endTime: end });
+
+  } catch (e) {
+    log(`❌ 异常: ${e.message}`, 'err');
+    console.error(e);
+  } finally {
+    setButtons(false);
+    setProgress(-1);
+  }
+}
+</script>
+</body>
+</html>
