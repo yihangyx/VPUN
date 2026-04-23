@@ -27,98 +27,71 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JumperVPN 注册器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>奕涵 VPN 注册器</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
-            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #0d1b2a 100%); 
+            font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             min-height: 100vh; 
-            padding: 40px 20px;
-            color: white;
+            padding: 20px;
+            color: #333;
         }
         .container { 
-            max-width: 480px; 
+            max-width: 550px; 
             margin: 0 auto; 
-            background: rgba(30, 30, 60, 0.95); 
-            border-radius: 24px; 
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5); 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
             overflow: hidden;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .header { 
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #ec4899 100%); 
-            padding: 32px 24px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 28px 24px; 
             text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.3; }
-        }
-        .header-content {
-            position: relative;
-            z-index: 1;
+            color: white;
         }
         .header h1 { 
-            font-size: 36px; 
-            margin-bottom: 8px;
+            font-size: 32px; 
+            margin-bottom: 6px;
             font-weight: 700;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .header p {
             font-size: 14px;
-            opacity: 0.9;
-            font-weight: 500;
+            opacity: 0.95;
         }
         .content { 
-            padding: 32px 24px; 
+            padding: 28px 24px; 
         }
         .form-group { 
-            margin-bottom: 24px; 
+            margin-bottom: 20px; 
         }
         label { 
             display: block; 
-            font-weight: 600; 
-            color: #e5e7eb; 
-            margin-bottom: 10px; 
+            font-weight: 700; 
+            color: #374151; 
+            margin-bottom: 8px; 
             font-size: 14px;
-        }
-        .input-wrapper {
-            position: relative;
         }
         input[type="text"] { 
             width: 100%; 
-            padding: 16px 20px; 
-            border: 2px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 14px; 
+            padding: 14px 16px; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 12px; 
             font-size: 15px; 
             transition: all 0.3s;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
+            background: #f9fafb;
+            color: #374151;
         }
         input[type="text"]:focus { 
             outline: none; 
-            border-color: #00d4ff;
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
         input[type="text"]::placeholder {
-            color: rgba(255, 255, 255, 0.4);
+            color: #9ca3af;
         }
         .radio-group { 
             display: flex; 
@@ -131,108 +104,98 @@ HTML_TEMPLATE = '''
             align-items: center; 
             justify-content: center;
             gap: 8px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            padding: 14px;
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            color: #e5e7eb;
+            color: #374151;
+            font-weight: 600;
         }
         .radio-item:hover {
-            border-color: rgba(124, 58, 237, 0.5);
-            background: rgba(124, 58, 237, 0.1);
+            border-color: #c7d2fe;
         }
         .radio-item input {
             margin: 0;
-            accent-color: #00d4ff;
+            accent-color: #667eea;
         }
         .radio-item.selected {
-            border-color: #00d4ff;
-            background: rgba(0, 212, 255, 0.1);
+            border-color: #667eea;
+            background: #eff6ff;
         }
         .btn { 
             width: 100%; 
-            padding: 18px; 
+            padding: 16px; 
             border: none; 
-            border-radius: 14px; 
+            border-radius: 12px; 
             cursor: pointer; 
             font-size: 16px; 
-            font-weight: 600; 
+            font-weight: 700; 
             transition: all 0.3s;
         }
         .btn:disabled { 
-            opacity: 0.5; 
+            opacity: 0.6; 
             cursor: not-allowed;
         }
         .btn-primary { 
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%); 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
             color: white;
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         .btn-primary:hover:not(:disabled) { 
             transform: translateY(-2px); 
-            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.6);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: #f3f4f6;
+            color: #374151;
             margin-top: 12px;
         }
         .btn-secondary:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.15);
+            background: #e5e7eb;
         }
         .result-card { 
-            margin-top: 28px; 
-            padding: 24px; 
-            border-radius: 18px; 
-            background: rgba(16, 185, 129, 0.15); 
-            border: 2px solid rgba(16, 185, 129, 0.4); 
+            margin-top: 24px; 
+            padding: 20px; 
+            border-radius: 16px; 
+            background: #f0fdf4; 
+            border: 2px solid #86efac; 
             display: none;
-            animation: slideIn 0.4s ease-out;
-        }
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
         .result-card.error { 
-            background: rgba(239, 68, 68, 0.15); 
-            border-color: rgba(239, 68, 68, 0.4); 
+            background: #fef2f2; 
+            border-color: #fca5a5; 
         }
         .result-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
         .result-header h3 {
-            font-size: 20px;
-            color: white;
+            font-size: 18px;
+            color: #166534;
+            font-weight: 700;
         }
         .info-item { 
             display: flex; 
             flex-direction: column;
-            padding: 16px; 
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            margin-bottom: 14px;
+            padding: 14px; 
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
         }
         .info-label { 
-            font-weight: 600; 
-            color: rgba(255, 255, 255, 0.6); 
+            font-weight: 700; 
+            color: #6b7280; 
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .info-value { 
-            color: white; 
+            color: #1f2937; 
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 14px;
             word-break: break-all;
@@ -242,7 +205,7 @@ HTML_TEMPLATE = '''
         }
         .copy-btn {
             padding: 8px 12px;
-            background: rgba(255, 255, 255, 0.15);
+            background: #667eea;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -250,44 +213,37 @@ HTML_TEMPLATE = '''
             color: white;
             transition: all 0.2s;
             flex-shrink: 0;
+            font-weight: 600;
         }
         .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: #764ba2;
         }
-        .token-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .token-display {
-            flex: 1;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            word-break: break-all;
+        .copy-btn.copied {
+            background: #10b981;
         }
         .log-box { 
-            margin-top: 28px; 
-            background: rgba(0, 0, 0, 0.4); 
+            margin-top: 24px; 
+            background: #1f2937; 
             color: #10b981; 
-            padding: 20px; 
-            border-radius: 14px; 
+            padding: 18px; 
+            border-radius: 12px; 
             font-family: 'Consolas', 'Monaco', monospace; 
             font-size: 13px; 
-            height: 300px; 
+            height: 280px; 
             overflow-y: auto; 
             line-height: 1.8;
             display: none;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid #374151;
         }
         .log-box::-webkit-scrollbar {
             width: 8px;
         }
         .log-box::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
+            background: #374151;
             border-radius: 4px;
         }
         .log-box::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
+            background: #6b7280;
             border-radius: 4px;
         }
         .log-entry { 
@@ -296,34 +252,35 @@ HTML_TEMPLATE = '''
         .loading { 
             display: none; 
             text-align: center; 
-            padding: 28px;
+            padding: 24px;
         }
         .spinner { 
-            border: 4px solid rgba(255, 255, 255, 0.1); 
-            border-top: 4px solid #00d4ff; 
+            border: 4px solid #e5e7eb; 
+            border-top: 4px solid #667eea; 
             border-radius: 50%; 
-            width: 56px; 
-            height: 56px; 
+            width: 52px; 
+            height: 52px; 
             animation: spin 1s linear infinite; 
-            margin: 0 auto 18px;
+            margin: 0 auto 16px;
         }
         @keyframes spin { 
             0% { transform: rotate(0deg); } 
             100% { transform: rotate(360deg); } 
         }
         .loading p {
-            color: #e5e7eb;
-            font-weight: 500;
+            color: #374151;
+            font-weight: 600;
         }
         .device-info {
             margin-top: 20px;
-            padding: 16px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 14px;
+            background: #fef3c7;
+            border-radius: 12px;
+            border: 1px solid #fcd34d;
             font-size: 13px;
-            color: rgba(255, 255, 255, 0.6);
+            color: #92400e;
             text-align: center;
+            font-weight: 500;
         }
         
         /* Modal styles */
@@ -333,7 +290,7 @@ HTML_TEMPLATE = '''
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             align-items: center;
             justify-content: center;
@@ -349,13 +306,12 @@ HTML_TEMPLATE = '''
             display: flex;
         }
         .modal {
-            background: linear-gradient(135deg, #1e1e3c 0%, #0d1b2a 100%);
-            border-radius: 24px;
-            max-width: 450px;
+            background: white;
+            border-radius: 20px;
+            max-width: 420px;
             width: 100%;
             padding: 32px;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
             animation: modalIn 0.4s ease-out;
         }
         @keyframes modalIn {
@@ -375,7 +331,7 @@ HTML_TEMPLATE = '''
         .modal-icon {
             width: 64px;
             height: 64px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -386,35 +342,35 @@ HTML_TEMPLATE = '''
         }
         @keyframes bounce {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.15); }
         }
         .modal-title {
             font-size: 24px;
             font-weight: 700;
-            color: white;
+            color: #374151;
             margin-bottom: 6px;
         }
         .modal-subtitle {
-            color: rgba(255, 255, 255, 0.6);
+            color: #6b7280;
             font-size: 14px;
         }
         .modal-content {
             margin-bottom: 28px;
         }
         .modal-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
         }
         .modal-item-label {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.5);
+            color: #6b7280;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 8px;
-            font-weight: 600;
+            font-weight: 700;
         }
         .modal-item-value {
             display: flex;
@@ -425,25 +381,28 @@ HTML_TEMPLATE = '''
         .modal-item-text {
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 14px;
-            color: white;
+            color: #1f2937;
             word-break: break-all;
             flex: 1;
         }
         .modal-btn {
             padding: 10px 16px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 10px;
             color: white;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
             flex-shrink: 0;
         }
         .modal-btn:hover {
             transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .modal-btn.copied {
+            background: #10b981;
         }
         .modal-footer {
             display: flex;
@@ -452,46 +411,52 @@ HTML_TEMPLATE = '''
         .modal-close-btn {
             flex: 1;
             padding: 16px;
-            background: rgba(255, 255, 255, 0.1);
+            background: #f3f4f6;
             border: none;
-            border-radius: 14px;
-            color: white;
+            border-radius: 12px;
+            color: #374151;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
         }
         .modal-close-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: #e5e7eb;
         }
         .modal-copy-all-btn {
             flex: 1;
             padding: 16px;
-            background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
-            border-radius: 14px;
+            border-radius: 12px;
             color: white;
             font-size: 15px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
         }
         .modal-copy-all-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="header-content">
-                <h1>🚀 JumperVPN</h1>
-                <p>一键注册 · 免费时长</p>
-            </div>
+            <h1>✨ 奕涵 VPN</h1>
+            <p>一键注册 · 免费时长</p>
         </div>
         <div class="content">
             <form id="registerForm">
+                <div class="form-group">
+                    <label>📧 邮箱</label>
+                    <input type="text" id="login_email" placeholder="等待注册...">
+                </div>
+                <div class="form-group">
+                    <label>🔐 密码</label>
+                    <input type="text" id="login_pwd" placeholder="等待注册...">
+                </div>
                 <div class="form-group">
                     <label>⚙️ 设备模式</label>
                     <div class="radio-group">
@@ -505,7 +470,7 @@ HTML_TEMPLATE = '''
                         </label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" id="submitBtn">✨ 开始注册</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">🚀 开始注册</button>
             </form>
 
             <div class="loading" id="loading">
@@ -520,36 +485,12 @@ HTML_TEMPLATE = '''
                     <h3 id="result_title">✅ 注册成功！</h3>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">邮箱</span>
-                    <span class="info-value">
-                        <span id="res_email"></span>
-                        <button class="copy-btn" onclick="copyText('res_email')">复制</button>
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">密码</span>
-                    <span class="info-value">
-                        <span id="res_pwd"></span>
-                        <button class="copy-btn" onclick="copyText('res_pwd')">复制</button>
-                    </span>
-                </div>
-                <div class="info-item">
                     <span class="info-label">免费时长</span>
                     <span class="info-value" id="res_free"></span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">到期时间</span>
                     <span class="info-value" id="res_end"></span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">JWT Token</span>
-                    <span class="info-value">
-                        <span class="token-wrapper" style="flex: 1;">
-                            <span class="token-display" id="res_token"></span>
-                            <button class="copy-btn" onclick="toggleToken()" id="token_toggle">显示</button>
-                        </span>
-                        <button class="copy-btn" onclick="copyText('res_token')">复制</button>
-                    </span>
                 </div>
                 <button class="btn btn-secondary" onclick="resetForm()">🔄 重新注册</button>
             </div>
@@ -594,7 +535,6 @@ HTML_TEMPLATE = '''
     <script>
         let sessionId = '';
         let pollInterval;
-        let tokenHidden = true;
         let currentResult = null;
 
         // Radio button styling
@@ -641,6 +581,9 @@ HTML_TEMPLATE = '''
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'block';
 
+            // 自动滚动到日志位置
+            document.getElementById('log_box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
             fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -684,20 +627,17 @@ HTML_TEMPLATE = '''
 
         function showResult(result) {
             currentResult = result;
-            tokenHidden = true;
+            
+            // 自动填充邮箱和密码到输入框
+            document.getElementById('login_email').value = result.email;
+            document.getElementById('login_pwd').value = result.pwd;
             
             const card = document.getElementById('result_card');
             card.style.display = 'block';
             card.classList.remove('error');
             document.getElementById('result_title').textContent = '✅ 注册成功！';
-            document.getElementById('res_email').textContent = result.email;
-            document.getElementById('res_pwd').textContent = result.pwd;
             document.getElementById('res_free').textContent = result.free_time;
             document.getElementById('res_end').textContent = result.end_time;
-            
-            // Token默认隐藏
-            document.getElementById('res_token').textContent = '••••••••••••••••••••';
-            document.getElementById('token_toggle').textContent = '显示';
         }
 
         function showError(error) {
@@ -705,11 +645,8 @@ HTML_TEMPLATE = '''
             card.style.display = 'block';
             card.classList.add('error');
             document.getElementById('result_title').textContent = '❌ 注册失败';
-            document.getElementById('res_email').textContent = error;
-            document.getElementById('res_pwd').textContent = '';
-            document.getElementById('res_free').textContent = '';
+            document.getElementById('res_free').textContent = error;
             document.getElementById('res_end').textContent = '';
-            document.getElementById('res_token').textContent = '';
         }
 
         function showModal(result) {
@@ -725,10 +662,12 @@ HTML_TEMPLATE = '''
         function copyToClipboard(text, btn) {
             navigator.clipboard.writeText(text).then(() => {
                 if (btn) {
+                    btn.classList.add('copied');
                     const original = btn.textContent;
                     btn.textContent = '已复制!';
                     setTimeout(() => {
                         btn.textContent = original;
+                        btn.classList.remove('copied');
                     }, 1500);
                 }
             });
@@ -749,45 +688,13 @@ HTML_TEMPLATE = '''
             });
         }
 
-        function toggleToken() {
-            const tokenEl = document.getElementById('res_token');
-            const toggleBtn = document.getElementById('token_toggle');
-            if (tokenHidden && currentResult) {
-                tokenEl.textContent = currentResult.token;
-                toggleBtn.textContent = '隐藏';
-            } else {
-                tokenEl.textContent = '••••••••••••••••••••';
-                toggleBtn.textContent = '显示';
-            }
-            tokenHidden = !tokenHidden;
-        }
-
-        function copyText(elementId) {
-            let text = '';
-            if (elementId === 'res_token' && tokenHidden && currentResult) {
-                text = currentResult.token;
-            } else {
-                text = document.getElementById(elementId).textContent;
-            }
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = event.target;
-                const original = btn.textContent;
-                btn.textContent = '已复制!';
-                setTimeout(() => {
-                    btn.textContent = original;
-                }, 1500);
-            }).catch(err => {
-                alert('复制失败: ' + err);
-            });
-        }
-
         function resetForm() {
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'none';
             document.getElementById('log_box').innerHTML = '';
+            document.getElementById('login_email').value = '';
+            document.getElementById('login_pwd').value = '';
             currentResult = null;
-            tokenHidden = true;
         }
 
         // Close modal on overlay click
@@ -1084,6 +991,6 @@ def api_status(session_id):
     })
 
 if __name__ == '__main__':
-    print('JumperVPN 注册器启动中...')
+    print('奕涵 VPN 注册器启动中...')
     print('请在浏览器中访问: http://127.0.0.1:5000')
     app.run(host='0.0.0.0', port=5000, debug=False)
