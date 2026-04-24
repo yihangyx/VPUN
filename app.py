@@ -499,7 +499,7 @@ HTML_TEMPLATE = '''
                 <div class="modal-item-label">邮箱</div>
                 <div class="modal-item-value">
                     <span id="modalEmailText"></span>
-                    <button class="copy-btn" id="copyEmailBtn">复制</button>
+                    <button class="copy-btn" onclick="copyEmail()">复制</button>
                 </div>
             </div>
 
@@ -507,7 +507,7 @@ HTML_TEMPLATE = '''
                 <div class="modal-item-label">密码</div>
                 <div class="modal-item-value">
                     <span id="modalPwdText"></span>
-                    <button class="copy-btn" id="copyPwdBtn">复制</button>
+                    <button class="copy-btn" onclick="copyPwd()">复制</button>
                 </div>
             </div>
 
@@ -644,27 +644,32 @@ HTML_TEMPLATE = '''
             document.getElementById('successModal').classList.remove('show');
         }
 
-        // 复制效果通用函数
-        function doCopy(btnId, text) {
+        // 复制通用效果
+        function copyWithEffect(btn, text) {
             navigator.clipboard.writeText(text);
-            const btn = document.getElementById(btnId);
             btn.classList.add('copied');
-            btn.innerText = '已复制';
+            btn.innerText = "已复制";
             setTimeout(() => {
                 btn.classList.remove('copied');
-                btn.innerText = '复制';
+                btn.innerText = "复制";
             }, 1500);
         }
 
         // 单个复制
         function copyEmail(){
-            doCopy('copyEmailBtn', document.getElementById('modalEmailText').innerText);
+            let btn = event.currentTarget;
+            let text = document.getElementById('modalEmailText').innerText;
+            copyWithEffect(btn, text);
         }
         function copyPwd(){
-            doCopy('copyPwdBtn', document.getElementById('modalPwdText').innerText);
+            let btn = event.currentTarget;
+            let text = document.getElementById('modalPwdText').innerText;
+            copyWithEffect(btn, text);
         }
         function copyToken() {
-            doCopy('copyTokenBtn', document.getElementById('token_text').innerText);
+            let btn = event.currentTarget;
+            let text = document.getElementById('token_text').innerText;
+            copyWithEffect(btn, text);
         }
 
         // 重置
@@ -675,11 +680,6 @@ HTML_TEMPLATE = '''
             document.getElementById('login_pwd').value = '';
             currentData = null;
         }
-
-        // 绑定点击事件
-        document.getElementById('copyEmailBtn').onclick = copyEmail;
-        document.getElementById('copyPwdBtn').onclick = copyPwd;
-        document.querySelector('#res_token .copy-btn').id = 'copyTokenBtn';
     </script>
 </body>
 </html>
