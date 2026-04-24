@@ -382,31 +382,24 @@ HTML_TEMPLATE = '''
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap:10px;
         }
 
         .modal-footer {
             display: flex;
-            gap: 12px;
+            justify-content: center;
             margin-top: 28px;
         }
 
-        .modal-btn {
-            flex: 1;
+        .modal-btn-close {
+            width:100%;
             padding: 14px;
             border-radius: 12px;
             font-weight: 600;
             border: none;
             cursor: pointer;
-        }
-
-        .modal-btn-close {
             background: #334155;
             color: #E2E8F0;
-        }
-
-        .modal-btn-copy {
-            background: linear-gradient(135deg, #4F46E5, #7C3AED);
-            color: white;
         }
 
         .footer {
@@ -503,17 +496,22 @@ HTML_TEMPLATE = '''
 
             <div class="modal-item">
                 <div class="modal-item-label">邮箱</div>
-                <div class="modal-item-value" id="modal_email"></div>
+                <div class="modal-item-value">
+                    <span id="modalEmailText"></span>
+                    <button class="copy-btn" onclick="copyEmail()">复制</button>
+                </div>
             </div>
 
             <div class="modal-item">
                 <div class="modal-item-label">密码</div>
-                <div class="modal-item-value" id="modal_pwd"></div>
+                <div class="modal-item-value">
+                    <span id="modalPwdText"></span>
+                    <button class="copy-btn" onclick="copyPwd()">复制</button>
+                </div>
             </div>
 
             <div class="modal-footer">
-                <button class="modal-btn modal-btn-close" onclick="closeModal()">关闭</button>
-                <button class="modal-btn modal-btn-copy" onclick="copyAll()">复制全部</button>
+                <button class="modal-btn-close" onclick="closeModal()">关闭</button>
             </div>
         </div>
     </div>
@@ -560,6 +558,9 @@ HTML_TEMPLATE = '''
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'block';
             document.getElementById('log_box').innerHTML = '';
+
+            // 自动跳转到日志区域
+            document.getElementById('log_box').scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             fetch('/api/register', {
                 method: 'POST',
@@ -633,8 +634,8 @@ HTML_TEMPLATE = '''
 
         // 弹窗
         function showModal(result) {
-            document.getElementById('modal_email').innerText = result.email;
-            document.getElementById('modal_pwd').innerText = result.pwd;
+            document.getElementById('modalEmailText').innerText = result.email;
+            document.getElementById('modalPwdText').innerText = result.pwd;
             document.getElementById('successModal').classList.add('show');
         }
 
@@ -642,7 +643,17 @@ HTML_TEMPLATE = '''
             document.getElementById('successModal').classList.remove('show');
         }
 
-        // 复制
+        // 单个复制
+        function copyEmail(){
+            let text = document.getElementById('modalEmailText').innerText;
+            navigator.clipboard.writeText(text);
+            alert("邮箱已复制");
+        }
+        function copyPwd(){
+            let text = document.getElementById('modalPwdText').innerText;
+            navigator.clipboard.writeText(text);
+            alert("密码已复制");
+        }
         function copyToken() {
             const text = document.getElementById('token_text').innerText;
             navigator.clipboard.writeText(text);
@@ -653,13 +664,6 @@ HTML_TEMPLATE = '''
                 btn.classList.remove('copied');
                 btn.innerText = '复制';
             }, 1500);
-        }
-
-        function copyAll() {
-            const data = currentData;
-            const text = `邮箱：${data.email}\n密码：${data.pwd}\nJ-Token：${data.token}`;
-            navigator.clipboard.writeText(text);
-            alert('✅ 已复制全部信息');
         }
 
         // 重置
