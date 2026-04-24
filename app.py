@@ -295,10 +295,11 @@ HTML_TEMPLATE = '''
             cursor: pointer;
             flex-shrink: 0;
             margin-left: 8px;
+            transition: all 0.2s;
         }
 
         .copy-btn.copied {
-            background: #10B981;
+            background: #10B981 !important;
         }
 
         /* 弹窗 */
@@ -498,7 +499,7 @@ HTML_TEMPLATE = '''
                 <div class="modal-item-label">邮箱</div>
                 <div class="modal-item-value">
                     <span id="modalEmailText"></span>
-                    <button class="copy-btn" onclick="copyEmail()">复制</button>
+                    <button class="copy-btn" id="copyEmailBtn">复制</button>
                 </div>
             </div>
 
@@ -506,7 +507,7 @@ HTML_TEMPLATE = '''
                 <div class="modal-item-label">密码</div>
                 <div class="modal-item-value">
                     <span id="modalPwdText"></span>
-                    <button class="copy-btn" onclick="copyPwd()">复制</button>
+                    <button class="copy-btn" id="copyPwdBtn">复制</button>
                 </div>
             </div>
 
@@ -643,27 +644,27 @@ HTML_TEMPLATE = '''
             document.getElementById('successModal').classList.remove('show');
         }
 
-        // 单个复制
-        function copyEmail(){
-            let text = document.getElementById('modalEmailText').innerText;
+        // 复制效果通用函数
+        function doCopy(btnId, text) {
             navigator.clipboard.writeText(text);
-            alert("邮箱已复制");
-        }
-        function copyPwd(){
-            let text = document.getElementById('modalPwdText').innerText;
-            navigator.clipboard.writeText(text);
-            alert("密码已复制");
-        }
-        function copyToken() {
-            const text = document.getElementById('token_text').innerText;
-            navigator.clipboard.writeText(text);
-            const btn = document.querySelector('.copy-btn');
+            const btn = document.getElementById(btnId);
             btn.classList.add('copied');
             btn.innerText = '已复制';
             setTimeout(() => {
                 btn.classList.remove('copied');
                 btn.innerText = '复制';
             }, 1500);
+        }
+
+        // 单个复制
+        function copyEmail(){
+            doCopy('copyEmailBtn', document.getElementById('modalEmailText').innerText);
+        }
+        function copyPwd(){
+            doCopy('copyPwdBtn', document.getElementById('modalPwdText').innerText);
+        }
+        function copyToken() {
+            doCopy('copyTokenBtn', document.getElementById('token_text').innerText);
         }
 
         // 重置
@@ -674,6 +675,11 @@ HTML_TEMPLATE = '''
             document.getElementById('login_pwd').value = '';
             currentData = null;
         }
+
+        // 绑定点击事件
+        document.getElementById('copyEmailBtn').onclick = copyEmail;
+        document.getElementById('copyPwdBtn').onclick = copyPwd;
+        document.querySelector('#res_token .copy-btn').id = 'copyTokenBtn';
     </script>
 </body>
 </html>
@@ -703,7 +709,7 @@ class JumperRegister:
         req.add_header('app-id', '2')
         req.add_header('version', '1.0.8')
         req.add_header('buildNumber', '3')
-        req.add_header('x-sign', sign)
+        req.add_header('x-sign', sign);
         req.add_header('Accept', '*/*')
 
         if mode == 'ios':
