@@ -27,549 +27,528 @@ HTML_TEMPLATE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>奕涵  注册器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>奕涵 VPN 注册器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            min-height: 100vh; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0F172A;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
-            color: #333;
+            color: #F8FAFC;
         }
-        .container { 
-            max-width: 550px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+
+        .card {
+            background: #1E293B;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             overflow: hidden;
+            border: 1px solid #334155;
         }
-        .header { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            padding: 28px 24px; 
+
+        .card-header {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            padding: 32px 24px;
             text-align: center;
+        }
+
+        .card-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .card-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .card-body {
+            padding: 32px 28px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #E2E8F0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: #0F172A;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #F8FAFC;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #818CF8;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: #94A3B8;
+        }
+
+        .mode-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .mode-item {
+            flex: 1;
+            padding: 14px;
+            background: #0F172A;
+            border: 1px solid #475569;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: #CBD5E1;
+        }
+
+        .mode-item:hover {
+            border-color: #64748B;
+        }
+
+        .mode-item.active {
+            background: #4F46E5;
+            border-color: #4F46E5;
             color: white;
         }
-        .header h1 { 
-            font-size: 32px; 
-            margin-bottom: 6px;
-            font-weight: 700;
+
+        .mode-item input {
+            display: none;
         }
-        .header p {
-            font-size: 14px;
-            opacity: 0.95;
-        }
-        .content { 
-            padding: 28px 24px; 
-        }
-        .form-group { 
-            margin-bottom: 20px; 
-        }
-        label { 
-            display: block; 
-            font-weight: 700; 
-            color: #374151; 
-            margin-bottom: 8px; 
-            font-size: 14px;
-        }
-        input[type="text"] { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 2px solid #e5e7eb; 
-            border-radius: 12px; 
-            font-size: 15px; 
-            transition: all 0.3s;
-            background: #f9fafb;
-            color: #374151;
-        }
-        input[type="text"]:focus { 
-            outline: none; 
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        input[type="text"]::placeholder {
-            color: #9ca3af;
-        }
-        .radio-group { 
-            display: flex; 
-            gap: 12px; 
-            margin-top: 10px; 
-        }
-        .radio-item { 
-            flex: 1;
-            display: flex; 
-            align-items: center; 
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 14px;
-            background: #f9fafb;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: #374151;
-            font-weight: 600;
         }
-        .radio-item:hover {
-            border-color: #c7d2fe;
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
-        .radio-item input {
-            margin: 0;
-            accent-color: #667eea;
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
         }
-        .radio-item.selected {
-            border-color: #667eea;
-            background: #eff6ff;
-        }
-        .btn { 
-            width: 100%; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: 700; 
-            transition: all 0.3s;
-        }
-        .btn:disabled { 
-            opacity: 0.6; 
+
+        .btn:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
-        .btn-primary { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-        }
-        .btn-primary:hover:not(:disabled) { 
-            transform: translateY(-2px); 
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
-        }
+
         .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
+            background: #334155;
+            color: #E2E8F0;
             margin-top: 12px;
         }
-        .btn-secondary:hover:not(:disabled) {
-            background: #e5e7eb;
+
+        .btn-secondary:hover {
+            background: #475569;
         }
-        .result-card { 
-            margin-top: 24px; 
-            padding: 20px; 
-            border-radius: 16px; 
-            background: #f0fdf4; 
-            border: 2px solid #86efac; 
+
+        /* 加载 */
+        .loading {
             display: none;
+            text-align: center;
+            padding: 30px 0;
         }
-        .result-card.error { 
-            background: #fef2f2; 
-            border-color: #fca5a5; 
-        }
-        .result-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .result-header h3 {
-            font-size: 18px;
-            color: #166534;
-            font-weight: 700;
-        }
-        .info-item { 
-            display: flex; 
-            flex-direction: column;
-            padding: 14px; 
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 12px;
-        }
-        .info-label { 
-            font-weight: 700; 
-            color: #6b7280; 
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
-        }
-        .info-value { 
-            color: #1f2937; 
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            word-break: break-all;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .copy-btn {
-            padding: 8px 12px;
-            background: #667eea;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            color: white;
-            transition: all 0.2s;
-            flex-shrink: 0;
-            font-weight: 600;
-        }
-        .copy-btn:hover {
-            background: #764ba2;
-        }
-        .copy-btn.copied {
-            background: #10b981;
-        }
-        .log-box { 
-            margin-top: 24px; 
-            background: #1f2937; 
-            color: #10b981; 
-            padding: 18px; 
-            border-radius: 12px; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-size: 13px; 
-            height: 280px; 
-            overflow-y: auto; 
-            line-height: 1.8;
-            display: none;
-            border: 1px solid #374151;
-        }
-        .log-box::-webkit-scrollbar {
-            width: 8px;
-        }
-        .log-box::-webkit-scrollbar-track {
-            background: #374151;
-            border-radius: 4px;
-        }
-        .log-box::-webkit-scrollbar-thumb {
-            background: #6b7280;
-            border-radius: 4px;
-        }
-        .log-entry { 
-            margin-bottom: 4px;
-        }
-        .loading { 
-            display: none; 
-            text-align: center; 
-            padding: 24px;
-        }
-        .spinner { 
-            border: 4px solid #e5e7eb; 
-            border-top: 4px solid #667eea; 
-            border-radius: 50%; 
-            width: 52px; 
-            height: 52px; 
-            animation: spin 1s linear infinite; 
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #334155;
+            border-top-color: #818CF8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
             margin: 0 auto 16px;
         }
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .loading p {
-            color: #374151;
-            font-weight: 600;
-        }
-        .device-info {
-            margin-top: 20px;
-            padding: 14px;
-            background: #fef3c7;
+
+        /* 日志 */
+        .log-box {
+            margin-top: 24px;
+            background: #0F172A;
             border-radius: 12px;
-            border: 1px solid #fcd34d;
-            font-size: 13px;
-            color: #92400e;
-            text-align: center;
-            font-weight: 500;
+            padding: 16px;
+            height: 260px;
+            overflow-y: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #10B981;
+            border: 1px solid #334155;
+            display: none;
         }
-        
-        /* Modal styles */
-        .modal-overlay {
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+
+        /* 结果卡片 */
+        .result-card {
+            margin-top: 24px;
+            background: #1E293B;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #475569;
+            display: none;
+        }
+
+        .result-success {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .result-error {
+            border-color: #EF4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-item {
+            margin-bottom: 16px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #94A3B8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #F8FAFC;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .copy-btn.copied {
+            background: #10B981;
+        }
+
+        /* 弹窗 */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 999;
             padding: 20px;
-            animation: fadeIn 0.3s ease-out;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .modal-overlay.active {
+
+        .modal.show {
             display: flex;
         }
-        .modal {
-            background: white;
+
+        .modal-content {
+            background: #1E293B;
             border-radius: 20px;
-            max-width: 420px;
             width: 100%;
+            max-width: 420px;
             padding: 32px;
-            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
-            animation: modalIn 0.4s ease-out;
+            border: 1px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        @keyframes modalIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
+
         .modal-header {
             text-align: center;
             margin-bottom: 28px;
         }
+
         .modal-icon {
             width: 64px;
             height: 64px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 16px;
-            font-size: 32px;
-            animation: bounce 0.6s ease-out;
+            font-size: 30px;
+            color: white;
         }
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
-        }
+
         .modal-title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
-            color: #374151;
+            color: #F8FAFC;
             margin-bottom: 6px;
         }
+
         .modal-subtitle {
-            color: #6b7280;
+            color: #94A3B8;
             font-size: 14px;
         }
-        .modal-content {
-            margin-bottom: 28px;
-        }
+
         .modal-item {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 18px;
         }
+
         .modal-item-label {
-            font-size: 11px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-            font-weight: 700;
-        }
-        .modal-item-value {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-        .modal-item-text {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 14px;
-            color: #1f2937;
-            word-break: break-all;
-            flex: 1;
-        }
-        .modal-btn {
-            padding: 10px 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            color: white;
             font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            color: #94A3B8;
+            margin-bottom: 8px;
         }
-        .modal-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+
+        .modal-item-value {
+            background: #0F172A;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #F8FAFC;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .modal-btn.copied {
-            background: #10b981;
-        }
+
         .modal-footer {
             display: flex;
             gap: 12px;
+            margin-top: 28px;
         }
-        .modal-close-btn {
+
+        .modal-btn {
             flex: 1;
-            padding: 16px;
-            background: #f3f4f6;
-            border: none;
+            padding: 14px;
             border-radius: 12px;
-            color: #374151;
-            font-size: 15px;
-            font-weight: 700;
+            font-weight: 600;
+            border: none;
             cursor: pointer;
-            transition: all 0.3s;
         }
-        .modal-close-btn:hover {
-            background: #e5e7eb;
+
+        .modal-btn-close {
+            background: #334155;
+            color: #E2E8F0;
         }
-        .modal-copy-all-btn {
-            flex: 1;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 12px;
+
+        .modal-btn-copy {
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
             color: white;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
         }
-        .modal-copy-all-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: #64748B;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>奕涵 VPN</h1>
-            <p></p>
+
+    <div class="card">
+        <div class="card-header">
+            <h1>奕涵 VPN 注册器</h1>
+            <p>一键自动注册 · 安全稳定</p>
         </div>
-        <div class="content">
+
+        <div class="card-body">
             <form id="registerForm">
                 <div class="form-group">
-                    <label>📧 邮箱</label>
-                    <input type="text" id="login_email" placeholder="等待注册...">
+                    <label class="form-label">📧 注册邮箱</label>
+                    <input type="text" class="form-input" id="login_email" placeholder="自动生成" readonly>
                 </div>
+
                 <div class="form-group">
-                    <label>🔐 密码</label>
-                    <input type="text" id="login_pwd" placeholder="等待注册...">
+                    <label class="form-label">🔐 登录密码</label>
+                    <input type="text" class="form-input" id="login_pwd" placeholder="自动生成" readonly>
                 </div>
+
                 <div class="form-group">
-                    <label>⚙️ 设备模式</label>
-                    <div class="radio-group">
-                        <label class="radio-item selected" id="radio_ios">
-                            <input type="radio" name="mode" id="mode_ios" value="ios" checked>
-                            iOS
+                    <label class="form-label">📱 设备模式</label>
+                    <div class="mode-group">
+                        <label class="mode-item active">
+                            <input type="radio" name="mode" value="ios" checked> iOS
                         </label>
-                        <label class="radio-item" id="radio_windows">
-                            <input type="radio" name="mode" id="mode_windows" value="windows">
-                            Windows
+                        <label class="mode-item">
+                            <input type="radio" name="mode" value="windows"> Windows
                         </label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" id="submitBtn">🚀 开始注册</button>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    🚀 开始自动注册
+                </button>
             </form>
 
+            <!-- 加载 -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
-                <p>正在注册中，请稍候...</p>
+                <p>正在处理中，请稍候...</p>
             </div>
 
+            <!-- 日志 -->
             <div class="log-box" id="log_box"></div>
 
+            <!-- 结果 -->
             <div class="result-card" id="result_card">
-                <div class="result-header">
-                    <h3 id="result_title">✅ 注册成功！</h3>
+                <div class="result-title" id="result_title">✅ 注册成功</div>
+
+                <div class="result-item">
+                    <div class="result-label">免费时长</div>
+                    <div class="result-value" id="res_free"></div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">免费时长</span>
-                    <span class="info-value" id="res_free"></span>
+
+                <div class="result-item">
+                    <div class="result-label">到期时间</div>
+                    <div class="result-value" id="res_end"></div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">到期时间</span>
-                    <span class="info-value" id="res_end"></span>
+
+                <div class="result-item">
+                    <div class="result-label">J-Token (登录凭证)</div>
+                    <div class="result-value" id="res_token">
+                        <span id="token_text"></span>
+                        <button class="copy-btn" onclick="copyToken()">复制</button>
+                    </div>
                 </div>
+
                 <button class="btn btn-secondary" onclick="resetForm()">🔄 重新注册</button>
             </div>
 
-            <div class="device-info">
-                ©2026.yihan
-            </div>
+            <div class="footer">© 2026 奕涵 - 仅供学习使用</div>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
+    <!-- 成功弹窗 -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-icon"></div>
+                <div class="modal-icon">✅</div>
                 <div class="modal-title">注册成功！</div>
-                <div class="modal-subtitle">请保存好您的账号信息</div>
+                <div class="modal-subtitle">请妥善保存账号信息</div>
             </div>
-            <div class="modal-content">
-                <div class="modal-item">
-                    <div class="modal-item-label">邮箱</div>
-                    <div class="modal-item-value">
-                        <span class="modal-item-text" id="modalEmail"></span>
-                        <button class="modal-btn" onclick="copyToClipboard(document.getElementById('modalEmail').textContent, this)">复制</button>
-                    </div>
-                </div>
-                <div class="modal-item">
-                    <div class="modal-item-label">密码</div>
-                    <div class="modal-item-value">
-                        <span class="modal-item-text" id="modalPassword"></span>
-                        <button class="modal-btn" onclick="copyToClipboard(document.getElementById('modalPassword').textContent, this)">复制</button>
-                    </div>
-                </div>
+
+            <div class="modal-item">
+                <div class="modal-item-label">邮箱</div>
+                <div class="modal-item-value" id="modal_email"></div>
             </div>
+
+            <div class="modal-item">
+                <div class="modal-item-label">密码</div>
+                <div class="modal-item-value" id="modal_pwd"></div>
+            </div>
+
             <div class="modal-footer">
-                <button class="modal-copy-all-btn" onclick="copyAll()">📋 复制全部</button>
-                <button class="modal-close-btn" onclick="closeModal()">关闭</button>
+                <button class="modal-btn modal-btn-close" onclick="closeModal()">关闭</button>
+                <button class="modal-btn modal-btn-copy" onclick="copyAll()">复制全部</button>
             </div>
         </div>
     </div>
 
     <script>
         let sessionId = '';
-        let pollInterval;
-        let currentResult = null;
+        let pollInterval = null;
+        let currentData = null;
 
-        // Radio button styling
-        document.querySelectorAll('input[name="mode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                document.querySelectorAll('.radio-item').forEach(item => {
-                    item.classList.remove('selected');
-                });
-                this.parentElement.classList.add('selected');
+        // 设备模式切换
+        document.querySelectorAll('.mode-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.mode-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                item.querySelector('input').checked = true;
             });
         });
 
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
+        // 表单提交
+        document.getElementById('registerForm').addEventListener('submit', e => {
             e.preventDefault();
             startRegister();
         });
 
+        // 生成密码
         function generatePassword() {
-            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            const numbers = '0123456789';
-            const allChars = lowercase + uppercase + numbers;
-            
-            let password = '';
-            password += uppercase[Math.floor(Math.random() * uppercase.length)];
-            password += lowercase[Math.floor(Math.random() * lowercase.length)];
-            password += numbers[Math.floor(Math.random() * numbers.length)];
-            
-            for (let i = 0; i < 9; i++) {
-                password += allChars[Math.floor(Math.random() * allChars.length)];
+            const chars = 'ABCDEFGHJKLMNPQRSTWXYZabcdefghjkmnpqrstwxyz23456789';
+            let pwd = '';
+            for (let i = 0; i < 12; i++) {
+                pwd += chars[Math.floor(Math.random() * chars.length)];
             }
-            
-            return password.split('').sort(() => 0.5 - Math.random()).join('');
+            return pwd;
         }
 
+        // 开始注册
         function startRegister() {
             const config = {
                 pwd: generatePassword(),
@@ -580,35 +559,34 @@ HTML_TEMPLATE = '''
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'block';
-
-            // 自动滚动到日志位置
-            document.getElementById('log_box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            document.getElementById('log_box').innerHTML = '';
 
             fetch('/api/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
-            }).then(r => r.json()).then(data => {
+            })
+            .then(res => res.json())
+            .then(data => {
                 if (data.success) {
                     sessionId = data.session_id;
-                    pollInterval = setInterval(pollStatus, 500);
-                } else {
-                    showError(data.error);
+                    pollInterval = setInterval(pollStatus, 600);
                 }
-            }).catch(err => {
-                showError('请求失败: ' + err);
             });
         }
 
+        // 轮询状态
         function pollStatus() {
-            fetch('/api/status/' + sessionId).then(r => r.json()).then(data => {
+            fetch(`/api/status/${sessionId}`)
+            .then(res => res.json())
+            .then(data => {
                 updateLogs(data.logs);
-                
+
                 if (data.done) {
                     clearInterval(pollInterval);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('submitBtn').disabled = false;
-                    
+
                     if (data.success) {
                         showResult(data.result);
                         showModal(data.result);
@@ -619,90 +597,79 @@ HTML_TEMPLATE = '''
             });
         }
 
+        // 更新日志
         function updateLogs(logs) {
-            const logBox = document.getElementById('log_box');
-            logBox.innerHTML = logs.map(log => '<div class="log-entry">' + log + '</div>').join('');
-            logBox.scrollTop = logBox.scrollHeight;
+            const box = document.getElementById('log_box');
+            box.innerHTML = logs.map(l => `<div class="log-entry">${l}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
         }
 
+        // 显示成功结果
         function showResult(result) {
-            currentResult = result;
-            
-            // 自动填充邮箱和密码到输入框
+            currentData = result;
             document.getElementById('login_email').value = result.email;
             document.getElementById('login_pwd').value = result.pwd;
-            
+
             const card = document.getElementById('result_card');
             card.style.display = 'block';
-            card.classList.remove('error');
-            document.getElementById('result_title').textContent = '✅ 注册成功！';
-            document.getElementById('res_free').textContent = result.free_time;
-            document.getElementById('res_end').textContent = result.end_time;
+            card.className = 'result-card result-success';
+            document.getElementById('result_title').innerHTML = '✅ 注册成功';
+
+            document.getElementById('res_free').innerText = result.free_time;
+            document.getElementById('res_end').innerText = result.end_time;
+            document.getElementById('token_text').innerText = result.token;
         }
 
-        function showError(error) {
+        // 显示错误
+        function showError(err) {
             const card = document.getElementById('result_card');
             card.style.display = 'block';
-            card.classList.add('error');
-            document.getElementById('result_title').textContent = '❌ 注册失败';
-            document.getElementById('res_free').textContent = error;
-            document.getElementById('res_end').textContent = '';
+            card.className = 'result-card result-error';
+            document.getElementById('result_title').innerHTML = '❌ 注册失败';
+            document.getElementById('res_free').innerText = err;
+            document.getElementById('res_end').innerText = '';
+            document.getElementById('token_text').innerText = '';
         }
 
+        // 弹窗
         function showModal(result) {
-            document.getElementById('modalEmail').textContent = result.email;
-            document.getElementById('modalPassword').textContent = result.pwd;
-            document.getElementById('modalOverlay').classList.add('active');
+            document.getElementById('modal_email').innerText = result.email;
+            document.getElementById('modal_pwd').innerText = result.pwd;
+            document.getElementById('successModal').classList.add('show');
         }
 
         function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('successModal').classList.remove('show');
         }
 
-        function copyToClipboard(text, btn) {
-            navigator.clipboard.writeText(text).then(() => {
-                if (btn) {
-                    btn.classList.add('copied');
-                    const original = btn.textContent;
-                    btn.textContent = '已复制!';
-                    setTimeout(() => {
-                        btn.textContent = original;
-                        btn.classList.remove('copied');
-                    }, 1500);
-                }
-            });
+        // 复制
+        function copyToken() {
+            const text = document.getElementById('token_text').innerText;
+            navigator.clipboard.writeText(text);
+            const btn = document.querySelector('.copy-btn');
+            btn.classList.add('copied');
+            btn.innerText = '已复制';
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerText = '复制';
+            }, 1500);
         }
 
         function copyAll() {
-            const email = document.getElementById('modalEmail').textContent;
-            const password = document.getElementById('modalPassword').textContent;
-            const text = '邮箱: ' + email + '\\n密码: ' + password;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.modal-copy-all-btn');
-                const original = btn.textContent;
-                btn.textContent = '✅ 已复制全部!';
-                setTimeout(() => {
-                    btn.textContent = original;
-                }, 1500);
-            });
+            const data = currentData;
+            const text = `邮箱：${data.email}\n密码：${data.pwd}\nJ-Token：${data.token}`;
+            navigator.clipboard.writeText(text);
+            alert('✅ 已复制全部信息');
         }
 
+        // 重置
         function resetForm() {
             document.getElementById('result_card').style.display = 'none';
             document.getElementById('log_box').style.display = 'none';
-            document.getElementById('log_box').innerHTML = '';
             document.getElementById('login_email').value = '';
             document.getElementById('login_pwd').value = '';
-            currentResult = null;
+            currentData = null;
         }
-
-        // Close modal on overlay click
-        document.getElementById('modalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
     </script>
 </body>
 </html>
@@ -991,6 +958,6 @@ def api_status(session_id):
     })
 
 if __name__ == '__main__':
-    print('奕涵  注册器启动中...')
+    print('奕涵 注册器启动中...')
     print('请在浏览器中访问: http://127.0.0.1:5000')
     app.run(host='0.0.0.0', port=5000, debug=False)
