@@ -10,152 +10,165 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1C1C1E;
             color: #fff;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
         }
         .header {
-            background: #000;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            text-align: center;
+            margin-bottom: 32px;
         }
-        .dots { display: flex; gap: 6px; }
-        .dot { width: 12px; height: 12px; border-radius: 50%; }
-        .dot.red { background: #FF5F57; }
-        .dot.yellow { background: #FEBC2E; }
-        .dot.green { background: #28C840; }
-        .title { font-size: 14px; font-weight: 600; color: #8E8E93; }
-        .status { margin-left: auto; font-size: 13px; color: #30D158; }
-        .main { flex: 1; display: flex; overflow: hidden; }
-        .sidebar {
-            width: 340px;
-            background: #2C2C2E;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            overflow-y: auto;
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
-        .content { flex: 1; display: flex; flex-direction: column; }
+        .header p {
+            color: #8E8E93;
+            font-size: 15px;
+        }
         .card {
-            background: #1C1C1E;
-            border-radius: 12px;
-            padding: 16px;
+            background: #2C2C2E;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
         }
         .card-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .btn {
             background: #BF5AF2;
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
+            transition: all 0.2s;
         }
-        .btn:disabled { background: #48484A; cursor: not-allowed; }
-        .btn.blue { background: #0A84FF; }
+        .btn:hover { background: #A254D6; }
+        .btn:disabled {
+            background: #48484A;
+            cursor: not-allowed;
+        }
+        .btn.secondary {
+            background: #0A84FF;
+        }
+        .btn.secondary:hover { background: #0071E3; }
         .email-box {
-            background: #2C2C2E;
-            border-radius: 8px;
-            padding: 12px;
+            background: #1C1C1E;
+            border-radius: 10px;
+            padding: 14px;
             font-family: monospace;
-            font-size: 13px;
+            font-size: 15px;
             color: #64D2FF;
             word-break: break-all;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
         }
-        .code-box {
-            background: #2C2C2E;
+        .copy-btn {
+            background: #48484A;
+            border: none;
+            color: white;
+            padding: 6px 12px;
             border-radius: 8px;
-            padding: 16px;
+            cursor: pointer;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+        .copy-btn:hover { background: #5a5a5e; }
+        .code-box {
+            background: #1C1C1E;
+            border-radius: 10px;
+            padding: 20px;
             font-family: monospace;
-            font-size: 28px;
+            font-size: 36px;
             font-weight: 700;
             color: #30D158;
             text-align: center;
-            letter-spacing: 4px;
+            letter-spacing: 8px;
         }
         .log {
-            background: #2C2C2E;
-            border-radius: 8px;
-            padding: 12px;
+            background: #1C1C1E;
+            border-radius: 10px;
+            padding: 14px;
             font-family: monospace;
             font-size: 12px;
+            max-height: 250px;
             overflow-y: auto;
-            max-height: 220px;
-            line-height: 1.6;
+            line-height: 1.8;
         }
         .log .ok { color: #30D158; }
         .log .err { color: #FF453A; }
         .log .info { color: #8E8E93; }
         .log .run { color: #0A84FF; }
         .log .warn { color: #FF9F0A; }
-        .iframe-container {
-            flex: 1;
-            background: #fff;
-            margin: 16px;
-            border-radius: 12px;
-            overflow: hidden;
+        .row {
+            display: flex;
+            gap: 10px;
         }
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .row { display: flex; gap: 8px; }
         .row .btn { flex: 1; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-badge.ready { background: #30D158; color: #000; }
+        .status-badge.running { background: #FF9F0A; color: #000; }
+        .status-badge.error { background: #FF453A; color: white; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="dots">
-            <div class="dot red"></div>
-            <div class="dot yellow"></div>
-            <div class="dot green"></div>
+    <div class="container">
+        <div class="header">
+            <h1>JumperVPN 自动注册</h1>
+            <p>基于 temp-mail.io 临时邮箱，一键完成注册</p>
         </div>
-        <div class="title">JumperVPN 自动注册工具</div>
-        <div class="status" id="status">● 就绪</div>
-    </div>
 
-    <div class="main">
-        <div class="sidebar">
-            <div class="card">
-                <div class="card-title">🚀 一键注册</div>
-                <button class="btn" id="btn-start" onclick="startFullFlow()">开始自动注册</button>
-                <div style="height: 8px;"></div>
-                <div class="row">
-                    <button class="btn blue" onclick="switchDomain()">切换到.shop域名</button>
-                    <button class="btn blue" onclick="newEmail()">新建邮箱</button>
-                </div>
+        <div class="card">
+            <div class="card-title">
+                🚀 操作
+                <span class="status-badge ready" id="status">就绪</span>
             </div>
+            <button class="btn" id="btn-start" onclick="startFullFlow()">
+                一键自动注册
+            </button>
+            <div style="height: 10px;"></div>
+            <button class="btn secondary" onclick="createNewEmail()">
+                新建邮箱
+            </button>
+        </div>
 
-            <div class="card">
-                <div class="card-title">📧 临时邮箱</div>
-                <div class="email-box" id="email">等待创建邮箱...</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">🔢 验证码</div>
-                <div class="code-box" id="code">----</div>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📋 运行日志</div>
-                <div class="log" id="log"></div>
+        <div class="card">
+            <div class="card-title">📧 临时邮箱</div>
+            <div class="email-box">
+                <span id="email">点击下方按钮创建</span>
+                <button class="copy-btn" onclick="copyEmail()">复制</button>
             </div>
         </div>
 
-        <div class="content">
-            <div class="iframe-container">
-                <iframe id="mailFrame" src="/api/beeinbox/" onload="onFrameLoad()"></iframe>
-            </div>
+        <div class="card">
+            <div class="card-title">🔢 验证码</div>
+            <div class="code-box" id="code">------</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">📋 运行日志</div>
+            <div class="log" id="log"></div>
         </div>
     </div>
 
@@ -163,169 +176,73 @@
     <script>
         let state = {
             email: '',
-            code: '',
+            tempToken: '',
             imei: '',
             deviceToken: '',
             running: false,
-            domainSwitched: false,
         };
 
         function log(msg, type = 'info') {
             const t = new Date().toLocaleTimeString();
             document.getElementById('log').innerHTML +=
                 '<div class="' + type + '">[' + t + '] ' + msg + '</div>';
-            document.getElementById('log').scrollTop = 99999;
+            const logEl = document.getElementById('log');
+            logEl.scrollTop = logEl.scrollHeight;
         }
 
-        function setStatus(msg, color = '#30D158') {
-            document.getElementById('status').textContent = '● ' + msg;
-            document.getElementById('status').style.color = color;
+        function setStatus(text, type = 'ready') {
+            const el = document.getElementById('status');
+            el.textContent = text;
+            el.className = 'status-badge ' + type;
         }
 
-        // 获取iframe里的Livewire组件
-        function getLivewireComponent() {
+        // 创建新邮箱
+        async function createNewEmail() {
             try {
-                const iframe = document.getElementById('mailFrame');
-                const win = iframe.contentWindow;
-                if (win.Livewire) {
-                    // 找第一个组件
-                    const components = win.Livewire.all();
-                    for (let comp of components) {
-                        if (comp.$wire && comp.$wire.setDomain) {
-                            return comp;
-                        }
-                    }
-                }
+                log('📧 创建新邮箱...', 'run');
+                const r = await fetch('/api/tempmail/new');
+                const data = await r.json();
+                
+                state.email = data.email;
+                state.tempToken = data.token;
+                
+                document.getElementById('email').textContent = data.email;
+                document.getElementById('code').textContent = '------';
+                
+                log('✅ 邮箱创建成功: ' + data.email, 'ok');
+                return data;
             } catch (e) {
-                console.log('Livewire error:', e);
+                log('❌ 创建邮箱失败: ' + e.message, 'err');
+                throw e;
             }
+        }
+
+        // 复制邮箱
+        function copyEmail() {
+            if (!state.email) return;
+            navigator.clipboard.writeText(state.email);
+            log('📋 已复制到剪贴板', 'info');
+        }
+
+        // 获取邮件
+        async function getMessages() {
+            const r = await fetch('/api/tempmail/messages/' + state.tempToken);
+            return await r.json();
+        }
+
+        // 从邮件中提取验证码
+        function extractCodeFromMessage(msg) {
+            // 先从纯文本提取
+            const bodyText = msg.body_text || '';
+            let match = bodyText.match(/\b(\d{4,6})\b/);
+            if (match) return match[1];
+            
+            // 再从HTML提取
+            const bodyHtml = msg.body_html || '';
+            match = bodyHtml.match(/\b(\d{4,6})\b/);
+            if (match) return match[1];
+            
             return null;
-        }
-
-        // 切换域名到beeinbox.shop
-        async function switchDomain() {
-            log('🔄 切换域名到 beeinbox.shop...', 'run');
-            const comp = getLivewireComponent();
-            if (comp) {
-                try {
-                    await comp.$wire.setDomain('beeinbox.shop');
-                    log('✅ 域名已切换', 'ok');
-                    state.domainSwitched = true;
-                    // 等一下然后新建邮箱
-                    setTimeout(() => newEmail(), 500);
-                } catch (e) {
-                    log('❌ 切换失败: ' + e.message, 'err');
-                }
-            } else {
-                log('❌ 找不到Livewire组件', 'err');
-            }
-        }
-
-        // 新建邮箱
-        async function newEmail() {
-            log('📧 新建邮箱...', 'run');
-            const comp = getLivewireComponent();
-            if (comp) {
-                try {
-                    // 调用deleteEmail来新建
-                    await comp.$wire.deleteEmail();
-                    log('✅ 已新建邮箱', 'ok');
-                } catch (e) {
-                    log('❌ 新建失败: ' + e.message, 'err');
-                }
-            }
-        }
-
-        // 从iframe提取邮箱
-        function extractEmail() {
-            try {
-                const iframe = document.getElementById('mailFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-                // 先试试Livewire组件
-                const comp = getLivewireComponent();
-                if (comp && comp.$wire.email) {
-                    const email = comp.$wire.email;
-                    if (email && email !== state.email) {
-                        state.email = email;
-                        document.getElementById('email').textContent = email;
-                        log('📧 邮箱: ' + email, 'ok');
-                    }
-                    return;
-                }
-
-                // 备选：从wire:initial-data找
-                const els = doc.querySelectorAll('*');
-                for (let el of els) {
-                    const data = el.getAttribute('wire:initial-data');
-                    if (data && data.includes('frontend.actions')) {
-                        const parsed = JSON.parse(data);
-                        const email = parsed.serverMemo.data.email;
-                        if (email && email !== state.email) {
-                            state.email = email;
-                            document.getElementById('email').textContent = email;
-                            log('📧 邮箱: ' + email, 'ok');
-                        }
-                        return;
-                    }
-                }
-            } catch (e) {}
-        }
-
-        // 从iframe提取验证码
-        function extractCode() {
-            try {
-                const iframe = document.getElementById('mailFrame');
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-
-                // 找所有iframe（邮件正文）
-                const iframes = doc.querySelectorAll('iframe');
-                for (let i of iframes) {
-                    try {
-                        const innerDoc = i.contentDocument || i.contentWindow.document;
-                        const text = innerDoc.body.innerText;
-                        const match = text.match(/\b(\d{4,6})\b/);
-                        if (match) {
-                            const code = match[1];
-                            if (code !== state.code) {
-                                state.code = code;
-                                document.getElementById('code').textContent = code;
-                                log('🔢 验证码: ' + code, 'ok');
-                            }
-                            return;
-                        }
-                    } catch (e) {}
-                }
-
-                // 备选：直接在页面里找
-                const bodyText = doc.body.innerText;
-                const match = bodyText.match(/\b(\d{4,6})\b/);
-                if (match) {
-                    const code = match[1];
-                    // 排除常见的非验证码
-                    if (!['2024', '2025', '2026', '2027'].includes(code)) {
-                        if (code !== state.code) {
-                            state.code = code;
-                            document.getElementById('code').textContent = code;
-                            log('🔢 验证码: ' + code, 'ok');
-                        }
-                    }
-                }
-            } catch (e) {}
-        }
-
-        // 定时提取
-        setInterval(() => {
-            extractEmail();
-            extractCode();
-        }, 1500);
-
-        function onFrameLoad() {
-            log('📬 邮箱页面加载完成', 'info');
-            // 自动切换域名
-            if (!state.domainSwitched) {
-                setTimeout(() => switchDomain(), 1000);
-            }
         }
 
         // 调用VPN API
@@ -334,14 +251,15 @@
             if (token) headers['j-token'] = token;
             if (imei) headers['imei'] = imei;
 
-            const resp = await fetch('/api/vpn/' + path, {
+            const r = await fetch('/api/vpn/' + path, {
                 method: method,
                 headers: headers,
                 body: body ? JSON.stringify(body) : undefined,
             });
-            return resp.json();
+            return await r.json();
         }
 
+        // 生成UUID (IMEI)
         function generateUUID() {
             return '{' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
                 const r = Math.random() * 16 | 0;
@@ -353,52 +271,37 @@
         async function startFullFlow() {
             if (state.running) return;
             state.running = true;
+            
             document.getElementById('btn-start').disabled = true;
-            setStatus('注册中...', '#FF9F0A');
+            setStatus('运行中', 'running');
 
             try {
-                log('=== 开始自动注册 ===', 'run');
+                log('════════════════════════', 'info');
+                log('🚀 开始自动注册流程', 'run');
 
-                // 确保域名是beeinbox.shop
-                if (!state.email || !state.email.endsWith('beeinbox.shop')) {
-                    log('⏳ 先确保域名是beeinbox.shop...', 'run');
-                    await switchDomain();
-                    await new Promise(r => setTimeout(r, 2000));
+                // Step 1: 创建邮箱
+                if (!state.email) {
+                    log('\n📌 Step 1: 创建临时邮箱', 'run');
+                    await createNewEmail();
+                } else {
+                    log('\n📌 Step 1: 使用已有邮箱', 'run');
+                    log('   ' + state.email, 'info');
                 }
 
-                // 生成IMEI
+                // Step 2: 生成IMEI并初始化设备
+                log('\n📌 Step 2: 初始化设备', 'run');
                 state.imei = generateUUID();
-                log('📱 IMEI: ' + state.imei, 'info');
+                log('   IMEI: ' + state.imei, 'info');
 
-                // device/init
-                log('🔄 device/init ...', 'run');
                 const initRes = await vpnApi('device/init', 'GET', null, null, state.imei);
                 if (initRes.code !== 200) {
-                    log('❌ device/init 失败: ' + JSON.stringify(initRes), 'err');
-                    return;
+                    throw new Error('device/init 失败: ' + JSON.stringify(initRes));
                 }
                 state.deviceToken = initRes.data.user_info.token;
-                log('✅ device token 获取成功', 'ok');
+                log('   ✅ 设备初始化成功', 'ok');
 
-                // 等待邮箱
-                log('⏳ 等待邮箱...', 'run');
-                let wait = 0;
-                while (!state.email && wait < 20) {
-                    await new Promise(r => setTimeout(r, 1000));
-                    wait++;
-                }
-                if (!state.email) {
-                    log('❌ 邮箱创建超时', 'err');
-                    return;
-                }
-
-                // 检查邮箱后缀
-                if (!state.email.endsWith('beeinbox.shop')) {
-                    log('⚠️ 邮箱后缀不是beeinbox.shop，可能会失败', 'warn');
-                }
-
-                // 发送验证码
-                log('📤 发送验证码到 ' + state.email + ' ...', 'run');
+                // Step 3: 发送验证码
+                log('\n📌 Step 3: 发送验证码', 'run');
                 const sendRes = await vpnApi(
                     'user/send_email_code',
                     'POST',
@@ -406,30 +309,55 @@
                     state.deviceToken,
                     state.imei
                 );
+
                 if (sendRes.code !== 200) {
-                    log('❌ 发送失败: ' + JSON.stringify(sendRes), 'err');
-                    return;
+                    throw new Error('发送验证码失败: ' + sendRes.message);
                 }
-                log('✅ 验证码已发送', 'ok');
+                log('   ✅ 验证码已发送', 'ok');
 
-                // 等待验证码
-                log('⏳ 等待验证码...', 'run');
-                state.code = '';
-                document.getElementById('code').textContent = '----';
-                wait = 0;
-                while (!state.code && wait < 40) {
-                    await new Promise(r => setTimeout(r, 1000));
-                    wait++;
-                }
-                if (!state.code) {
-                    log('❌ 等待验证码超时', 'err');
-                    return;
+                // Step 4: 等待验证码
+                log('\n📌 Step 4: 等待接收验证码', 'run');
+                let code = null;
+                
+                for (let i = 0; i < 40; i++) {
+                    await new Promise(r => setTimeout(r, 3000));
+                    
+                    const messages = await getMessages();
+                    if (messages && messages.length > 0) {
+                        log(`   📬 收到 ${messages.length} 封邮件`, 'info');
+                        
+                        for (let msg of messages) {
+                            code = extractCodeFromMessage(msg);
+                            if (code) {
+                                log('   邮件主题: ' + (msg.subject || ''), 'info');
+                                break;
+                            }
+                        }
+                        
+                        if (code) break;
+                    }
+                    
+                    if (i % 5 === 4) {
+                        log(`   ⏳ 已等待 ${(i+1)*3} 秒...`, 'info');
+                    }
                 }
 
-                // 注册
-                const pwdRaw = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+                if (!code) {
+                    throw new Error('等待验证码超时（120秒）');
+                }
+
+                state.code = code;
+                document.getElementById('code').textContent = code;
+                log('   ✅ 验证码: ' + code, 'ok');
+
+                // Step 5: 注册账号
+                log('\n📌 Step 5: 完成注册', 'run');
+                
+                const pwdRaw = Math.random().toString(36).slice(-8) +
+                               Math.random().toString(36).slice(-8);
                 const pwdMd5 = CryptoJS.MD5(pwdRaw).toString();
-                log('📝 注册账号 | 密码: ' + pwdRaw, 'run');
+                
+                log('   生成随机密码: ' + pwdRaw, 'info');
 
                 const signupRes = await vpnApi(
                     'user/signup',
@@ -438,30 +366,43 @@
                         email: state.email,
                         password: pwdMd5,
                         repassword: pwdMd5,
-                        code: state.code,
+                        code: code,
                     },
                     state.deviceToken,
                     state.imei
                 );
 
-                if (signupRes.code === 200) {
-                    const free = signupRes.data.user_info.free_remaining_time;
-                    const h = Math.floor(free / 3600);
-                    const m = Math.floor((free % 3600) / 60);
-                    log('✅ 注册成功! 剩余 ' + h + '小时' + m + '分', 'ok');
-                    log('🔑 密码: ' + pwdRaw, 'warn');
-                    setStatus('✅ 注册成功 | ' + h + 'h' + m + 'm', '#30D158');
-                } else {
-                    log('❌ 注册失败: ' + signupRes.message, 'err');
+                if (signupRes.code !== 200) {
+                    throw new Error('注册失败: ' + signupRes.message);
                 }
+
+                const free = signupRes.data.user_info.free_remaining_time;
+                const hours = Math.floor(free / 3600);
+                const mins = Math.floor((free % 3600) / 60);
+
+                log('\n════════════════════════', 'ok');
+                log('🎉 注册成功！', 'ok');
+                log('   邮箱: ' + state.email, 'ok');
+                log('   密码: ' + pwdRaw, 'warn');
+                log(`   免费时长: ${hours}小时${mins}分`, 'ok');
+                log('════════════════════════', 'ok');
+
+                setStatus('注册成功', 'ready');
+
             } catch (e) {
-                log('❌ 异常: ' + e.message, 'err');
-                setStatus('错误', '#FF453A');
+                log('\n❌ 错误: ' + e.message, 'err');
+                setStatus('失败', 'error');
             } finally {
                 state.running = false;
                 document.getElementById('btn-start').disabled = false;
             }
         }
+
+        // 页面加载后自动创建邮箱
+        window.onload = function() {
+            log('👋 欢迎使用 JumperVPN 自动注册工具', 'info');
+            log('点击"一键自动注册"开始', 'info');
+        };
     </script>
 </body>
 </html>
