@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "buildCommand": false,
-  "outputDirectory": ".",
-  "framework": null,
-  "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+  "builds": [
+    { "src": "app.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "app.py" }
   ]
 }
