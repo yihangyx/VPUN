@@ -5,21 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JumperVPN 自动注册</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #1C1C1E;
             color: #fff;
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
-
         .header {
             background: #000;
             padding: 12px 20px;
@@ -27,42 +21,16 @@
             align-items: center;
             gap: 12px;
         }
-
-        .dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
+        .dots { display: flex; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
         .dot.red { background: #FF5F57; }
         .dot.yellow { background: #FEBC2E; }
         .dot.green { background: #28C840; }
-
-        .title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #8E8E93;
-        }
-
-        .status {
-            margin-left: auto;
-            font-size: 13px;
-            color: #30D158;
-        }
-
-        .main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
+        .title { font-size: 14px; font-weight: 600; color: #8E8E93; }
+        .status { margin-left: auto; font-size: 13px; color: #30D158; }
+        .main { flex: 1; display: flex; overflow: hidden; }
         .sidebar {
-            width: 320px;
+            width: 340px;
             background: #2C2C2E;
             padding: 20px;
             display: flex;
@@ -70,31 +38,19 @@
             gap: 16px;
             overflow-y: auto;
         }
-
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #1C1C1E;
-        }
-
+        .content { flex: 1; display: flex; flex-direction: column; }
         .card {
-            background: #2C2C2E;
+            background: #1C1C1E;
             border-radius: 12px;
             padding: 16px;
         }
-
         .card-title {
             font-size: 14px;
             font-weight: 600;
             margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
-
         .btn {
-            background: #0A84FF;
+            background: #BF5AF2;
             color: white;
             border: none;
             padding: 12px 20px;
@@ -103,59 +59,44 @@
             font-weight: 500;
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s;
         }
-
-        .btn:hover { background: #0071E3; }
         .btn:disabled { background: #48484A; cursor: not-allowed; }
-
-        .btn.purple { background: #BF5AF2; }
-        .btn.purple:hover { background: #A254D6; }
-        .btn.green { background: #30D158; }
-        .btn.green:hover { background: #28C840; }
-
+        .btn.blue { background: #0A84FF; }
         .email-box {
-            background: #1C1C1E;
+            background: #2C2C2E;
             border-radius: 8px;
             padding: 12px;
-            font-family: 'SF Mono', monospace;
+            font-family: monospace;
             font-size: 13px;
             color: #64D2FF;
             word-break: break-all;
-            margin-top: 8px;
         }
-
         .code-box {
-            background: #1C1C1E;
+            background: #2C2C2E;
             border-radius: 8px;
             padding: 16px;
-            font-family: 'SF Mono', monospace;
+            font-family: monospace;
             font-size: 28px;
             font-weight: 700;
             color: #30D158;
             text-align: center;
             letter-spacing: 4px;
-            margin-top: 8px;
         }
-
         .log {
-            flex: 1;
-            background: #1C1C1E;
+            background: #2C2C2E;
             border-radius: 8px;
             padding: 12px;
-            font-family: 'SF Mono', monospace;
+            font-family: monospace;
             font-size: 12px;
             overflow-y: auto;
-            max-height: 200px;
+            max-height: 220px;
             line-height: 1.6;
         }
-
         .log .ok { color: #30D158; }
         .log .err { color: #FF453A; }
         .log .info { color: #8E8E93; }
         .log .run { color: #0A84FF; }
         .log .warn { color: #FF9F0A; }
-
         .iframe-container {
             flex: 1;
             background: #fff;
@@ -163,18 +104,12 @@
             border-radius: 12px;
             overflow: hidden;
         }
-
         .iframe-container iframe {
             width: 100%;
             height: 100%;
             border: none;
         }
-
-        .row {
-            display: flex;
-            gap: 8px;
-        }
-
+        .row { display: flex; gap: 8px; }
         .row .btn { flex: 1; }
     </style>
 </head>
@@ -193,7 +128,12 @@
         <div class="sidebar">
             <div class="card">
                 <div class="card-title">🚀 一键注册</div>
-                <button class="btn purple" id="btn-start" onclick="startFullFlow()">开始自动注册</button>
+                <button class="btn" id="btn-start" onclick="startFullFlow()">开始自动注册</button>
+                <div style="height: 8px;"></div>
+                <div class="row">
+                    <button class="btn blue" onclick="switchDomain()">切换到.shop域名</button>
+                    <button class="btn blue" onclick="newEmail()">新建邮箱</button>
+                </div>
             </div>
 
             <div class="card">
@@ -219,35 +159,102 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <script>
         let state = {
             email: '',
             code: '',
             imei: '',
             deviceToken: '',
-            userToken: '',
             running: false,
+            domainSwitched: false,
         };
 
         function log(msg, type = 'info') {
-            const logEl = document.getElementById('log');
-            const time = new Date().toLocaleTimeString();
-            logEl.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
-            logEl.scrollTop = logEl.scrollHeight;
+            const t = new Date().toLocaleTimeString();
+            document.getElementById('log').innerHTML +=
+                '<div class="' + type + '">[' + t + '] ' + msg + '</div>';
+            document.getElementById('log').scrollTop = 99999;
         }
 
         function setStatus(msg, color = '#30D158') {
-            document.getElementById('status').textContent = `● ${msg}`;
+            document.getElementById('status').textContent = '● ' + msg;
             document.getElementById('status').style.color = color;
         }
 
-        // 从iframe中提取邮箱地址
+        // 获取iframe里的Livewire组件
+        function getLivewireComponent() {
+            try {
+                const iframe = document.getElementById('mailFrame');
+                const win = iframe.contentWindow;
+                if (win.Livewire) {
+                    // 找第一个组件
+                    const components = win.Livewire.all();
+                    for (let comp of components) {
+                        if (comp.$wire && comp.$wire.setDomain) {
+                            return comp;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Livewire error:', e);
+            }
+            return null;
+        }
+
+        // 切换域名到beeinbox.shop
+        async function switchDomain() {
+            log('🔄 切换域名到 beeinbox.shop...', 'run');
+            const comp = getLivewireComponent();
+            if (comp) {
+                try {
+                    await comp.$wire.setDomain('beeinbox.shop');
+                    log('✅ 域名已切换', 'ok');
+                    state.domainSwitched = true;
+                    // 等一下然后新建邮箱
+                    setTimeout(() => newEmail(), 500);
+                } catch (e) {
+                    log('❌ 切换失败: ' + e.message, 'err');
+                }
+            } else {
+                log('❌ 找不到Livewire组件', 'err');
+            }
+        }
+
+        // 新建邮箱
+        async function newEmail() {
+            log('📧 新建邮箱...', 'run');
+            const comp = getLivewireComponent();
+            if (comp) {
+                try {
+                    // 调用deleteEmail来新建
+                    await comp.$wire.deleteEmail();
+                    log('✅ 已新建邮箱', 'ok');
+                } catch (e) {
+                    log('❌ 新建失败: ' + e.message, 'err');
+                }
+            }
+        }
+
+        // 从iframe提取邮箱
         function extractEmail() {
             try {
                 const iframe = document.getElementById('mailFrame');
                 const doc = iframe.contentDocument || iframe.contentWindow.document;
-                
-                // 找所有wire:initial-data里的frontend.actions组件
+
+                // 先试试Livewire组件
+                const comp = getLivewireComponent();
+                if (comp && comp.$wire.email) {
+                    const email = comp.$wire.email;
+                    if (email && email !== state.email) {
+                        state.email = email;
+                        document.getElementById('email').textContent = email;
+                        log('📧 邮箱: ' + email, 'ok');
+                    }
+                    return;
+                }
+
+                // 备选：从wire:initial-data找
                 const els = doc.querySelectorAll('*');
                 for (let el of els) {
                     const data = el.getAttribute('wire:initial-data');
@@ -257,67 +264,79 @@
                         if (email && email !== state.email) {
                             state.email = email;
                             document.getElementById('email').textContent = email;
-                            log(`📧 邮箱: ${email}`, 'ok');
+                            log('📧 邮箱: ' + email, 'ok');
                         }
-                        return email;
+                        return;
                     }
                 }
-            } catch (e) {
-                // 跨域错误，忽略
-            }
-            return null;
+            } catch (e) {}
         }
 
-        // 从iframe中提取验证码
+        // 从iframe提取验证码
         function extractCode() {
             try {
                 const iframe = document.getElementById('mailFrame');
                 const doc = iframe.contentDocument || iframe.contentWindow.document;
-                
-                // 找iframe里的邮件正文
+
+                // 找所有iframe（邮件正文）
                 const iframes = doc.querySelectorAll('iframe');
                 for (let i of iframes) {
                     try {
                         const innerDoc = i.contentDocument || i.contentWindow.document;
                         const text = innerDoc.body.innerText;
-                        // 匹配4-6位数字验证码
                         const match = text.match(/\b(\d{4,6})\b/);
                         if (match) {
                             const code = match[1];
                             if (code !== state.code) {
                                 state.code = code;
                                 document.getElementById('code').textContent = code;
-                                log(`🔢 验证码: ${code}`, 'ok');
+                                log('🔢 验证码: ' + code, 'ok');
                             }
-                            return code;
+                            return;
                         }
                     } catch (e) {}
                 }
+
+                // 备选：直接在页面里找
+                const bodyText = doc.body.innerText;
+                const match = bodyText.match(/\b(\d{4,6})\b/);
+                if (match) {
+                    const code = match[1];
+                    // 排除常见的非验证码
+                    if (!['2024', '2025', '2026', '2027'].includes(code)) {
+                        if (code !== state.code) {
+                            state.code = code;
+                            document.getElementById('code').textContent = code;
+                            log('🔢 验证码: ' + code, 'ok');
+                        }
+                    }
+                }
             } catch (e) {}
-            return null;
         }
 
-        // 定时从iframe提取邮箱和验证码
+        // 定时提取
         setInterval(() => {
             extractEmail();
             extractCode();
-        }, 2000);
+        }, 1500);
 
         function onFrameLoad() {
             log('📬 邮箱页面加载完成', 'info');
+            // 自动切换域名
+            if (!state.domainSwitched) {
+                setTimeout(() => switchDomain(), 1000);
+            }
         }
 
         // 调用VPN API
         async function vpnApi(path, method = 'GET', body = null, token = null, imei = null) {
-            const headers = {
-                'Content-Type': 'application/json',
-            };
+            const headers = { 'Content-Type': 'application/json' };
             if (token) headers['j-token'] = token;
             if (imei) headers['imei'] = imei;
 
-            const resp = await fetch(`/api/vpn/${path}`, {
-                method,
-                headers,
+            const resp = await fetch('/api/vpn/' + path, {
+                method: method,
+                headers: headers,
                 body: body ? JSON.stringify(body) : undefined,
             });
             return resp.json();
@@ -330,13 +349,7 @@
             }) + '}';
         }
 
-        function md5(text) {
-            // 简单MD5，实际需要用库，这里先占位
-            // 用crypto-js
-            return CryptoJS.MD5(text).toString();
-        }
-
-        // 一键注册流程
+        // 完整注册流程
         async function startFullFlow() {
             if (state.running) return;
             state.running = true;
@@ -346,78 +359,103 @@
             try {
                 log('=== 开始自动注册 ===', 'run');
 
-                // Step 1: 生成IMEI
-                state.imei = generateUUID();
-                log(`📱 IMEI: ${state.imei}`, 'info');
+                // 确保域名是beeinbox.shop
+                if (!state.email || !state.email.endsWith('beeinbox.shop')) {
+                    log('⏳ 先确保域名是beeinbox.shop...', 'run');
+                    await switchDomain();
+                    await new Promise(r => setTimeout(r, 2000));
+                }
 
-                // Step 2: device/init
+                // 生成IMEI
+                state.imei = generateUUID();
+                log('📱 IMEI: ' + state.imei, 'info');
+
+                // device/init
                 log('🔄 device/init ...', 'run');
                 const initRes = await vpnApi('device/init', 'GET', null, null, state.imei);
                 if (initRes.code !== 200) {
-                    log(`❌ device/init 失败: ${JSON.stringify(initRes)}`, 'err');
+                    log('❌ device/init 失败: ' + JSON.stringify(initRes), 'err');
                     return;
                 }
                 state.deviceToken = initRes.data.user_info.token;
                 log('✅ device token 获取成功', 'ok');
 
-                // Step 3: 等待邮箱创建
-                log('⏳ 等待临时邮箱创建...', 'run');
-                let waitCount = 0;
-                while (!state.email && waitCount < 30) {
+                // 等待邮箱
+                log('⏳ 等待邮箱...', 'run');
+                let wait = 0;
+                while (!state.email && wait < 20) {
                     await new Promise(r => setTimeout(r, 1000));
-                    waitCount++;
+                    wait++;
                 }
                 if (!state.email) {
                     log('❌ 邮箱创建超时', 'err');
                     return;
                 }
 
-                // Step 4: 发送验证码
-                log(`📤 发送验证码到 ${state.email} ...`, 'run');
-                const sendRes = await vpnApi('user/send_email_code', 'POST', 
-                    { email: state.email, type: 10 }, 
-                    state.deviceToken, state.imei);
+                // 检查邮箱后缀
+                if (!state.email.endsWith('beeinbox.shop')) {
+                    log('⚠️ 邮箱后缀不是beeinbox.shop，可能会失败', 'warn');
+                }
+
+                // 发送验证码
+                log('📤 发送验证码到 ' + state.email + ' ...', 'run');
+                const sendRes = await vpnApi(
+                    'user/send_email_code',
+                    'POST',
+                    { email: state.email, type: 10 },
+                    state.deviceToken,
+                    state.imei
+                );
                 if (sendRes.code !== 200) {
-                    log(`❌ 发送失败: ${JSON.stringify(sendRes)}`, 'err');
+                    log('❌ 发送失败: ' + JSON.stringify(sendRes), 'err');
                     return;
                 }
                 log('✅ 验证码已发送', 'ok');
 
-                // Step 5: 等待验证码
-                log('⏳ 等待接收验证码...', 'run');
-                waitCount = 0;
-                while (!state.code && waitCount < 30) {
+                // 等待验证码
+                log('⏳ 等待验证码...', 'run');
+                state.code = '';
+                document.getElementById('code').textContent = '----';
+                wait = 0;
+                while (!state.code && wait < 40) {
                     await new Promise(r => setTimeout(r, 1000));
-                    waitCount++;
+                    wait++;
                 }
                 if (!state.code) {
                     log('❌ 等待验证码超时', 'err');
                     return;
                 }
 
-                // Step 6: 注册
+                // 注册
                 const pwdRaw = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-                const pwdMd5 = md5(pwdRaw);
-                log(`📝 注册账号 | 密码: ${pwdRaw}`, 'run');
+                const pwdMd5 = CryptoJS.MD5(pwdRaw).toString();
+                log('📝 注册账号 | 密码: ' + pwdRaw, 'run');
 
-                const signupRes = await vpnApi('user/signup', 'POST',
-                    { email: state.email, password: pwdMd5, repassword: pwdMd5, code: state.code },
-                    state.deviceToken, state.imei);
-                
+                const signupRes = await vpnApi(
+                    'user/signup',
+                    'POST',
+                    {
+                        email: state.email,
+                        password: pwdMd5,
+                        repassword: pwdMd5,
+                        code: state.code,
+                    },
+                    state.deviceToken,
+                    state.imei
+                );
+
                 if (signupRes.code === 200) {
-                    state.userToken = signupRes.data.user_info.token;
                     const free = signupRes.data.user_info.free_remaining_time;
-                    const hours = Math.floor(free / 3600);
-                    const mins = Math.floor((free % 3600) / 60);
-                    log(`✅ 注册成功! 剩余 ${hours}小时${mins}分`, 'ok');
-                    log(`🔑 密码: ${pwdRaw}`, 'warn');
-                    setStatus(`✅ 注册成功 | ${hours}h${mins}m`, '#30D158');
+                    const h = Math.floor(free / 3600);
+                    const m = Math.floor((free % 3600) / 60);
+                    log('✅ 注册成功! 剩余 ' + h + '小时' + m + '分', 'ok');
+                    log('🔑 密码: ' + pwdRaw, 'warn');
+                    setStatus('✅ 注册成功 | ' + h + 'h' + m + 'm', '#30D158');
                 } else {
-                    log(`❌ 注册失败: ${signupRes.message}`, 'err');
+                    log('❌ 注册失败: ' + signupRes.message, 'err');
                 }
-
             } catch (e) {
-                log(`❌ 异常: ${e.message}`, 'err');
+                log('❌ 异常: ' + e.message, 'err');
                 setStatus('错误', '#FF453A');
             } finally {
                 state.running = false;
@@ -425,8 +463,5 @@
             }
         }
     </script>
-
-    <!-- CryptoJS for MD5 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </body>
 </html>
