@@ -6,47 +6,103 @@ import hashlib
 app = Flask(__name__)
 
 SIGN_KEY = '000000000000000000018d91e471e0989cda27df505a453f2b7635294f2ddf23e3b122acc99c9e9f1e14'
-TEMPMAIL_API = 'https://api.internal.temp-mail.io/api/v3'
+TEMPPIN_API = 'https://temppin.com'
 
 def make_sign(path):
     return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256).hexdigest()
 
-# ===== Temp-Mail API 代理 =====
+def add_cors(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    return response
 
-@app.route('/api/tempmail/new', methods=['GET', 'POST', 'OPTIONS'])
-def tempmail_new():
+# ===== Temppin API 代理 =====
+
+@app.route('/api/temppin/create', methods=['GET', 'POST', 'OPTIONS'])
+def temppin_create():
     if request.method == 'OPTIONS':
-        return ('', 204)
+        return add_cors(Response('', 204))
     
     try:
         r = requests.post(
-            f'{TEMPMAIL_API}/email/new',
-            json={"min_name": 10, "max_name": 10},
+            f'{TEMPPIN_API}/api/tempmail/create',
+            json={"expiryHours": 3},
+            headers={
+                'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
+                'Accept': 'application/json',
+                'Referer': 'https://temppin.com/zh/',
+            },
             timeout=15,
         )
+        
         response = Response(r.content, r.status_code)
-        response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return add_cors(response)
     except Exception as e:
-        return Response(f'{{"error": "{str(e)}"}}', status=500, mimetype='application/json')
+        return add_cors(Response(
+            f'{{"error": "{str(e)}"}}',
+            status=500,
+            mimetype='application/json'
+        ))
 
-@app.route('/api/tempmail/messages/<token>', methods=['GET', 'OPTIONS'])
-def tempmail_messages(token):
+@app.route('/api/temppin/inbox', methods=['GET', 'OPTIONS'])
+def temppin_inbox():
     if request.method == 'OPTIONS':
-        return ('', 204)
+        return add_cors(Response('', 204))
+    
+    token = request.args.get('token', '')
     
     try:
         r = requests.get(
-            f'{TEMPMAIL_API}/email/{token}/messages',
+            f'{TEMPPIN_API}/api/tempmail/inbox',
+            params={'token': token},
+            headers={
+                'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
+                'Accept': 'application/json',
+                'Referer': 'https://temppin.com/zh/',
+            },
             timeout=15,
         )
+        
         response = Response(r.content, r.status_code)
-        response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return add_cors(response)
     except Exception as e:
-        return Response(f'{{"error": "{str(e)}"}}', status=500, mimetype='application/json')
+        return add_cors(Response(
+            f'{{"error": "{str(e)}"}}',
+            status=500,
+            mimetype='application/json'
+        ))
+
+@app.route('/api/temppin/email/<mail_id>', methods=['GET', 'OPTIONS'])
+def temppin_email(mail_id):
+    if request.method == 'OPTIONS':
+        return add_cors(Response('', 204))
+    
+    token = request.args.get('token', '')
+    
+    try:
+        r = requests.get(
+            f'{TEMPPIN_API}/api/tempmail/email/{mail_id}',
+            params={'token': token},
+            headers={
+                'User-Agent': request.headers.get('User-Agent', 'Mozilla/5.0'),
+                'Accept': 'application/json',
+                'Referer': 'https://temppin.com/zh/',
+            },
+            timeout=15,
+        )
+        
+        response = Response(r.content, r.status_code)
+        response.headers['Content-Type'] = 'application/json'
+        return add_cors(response)
+    except Exception as e:
+        return add_cors(Response(
+            f'{{"error": "{str(e)}"}}',
+            status=500,
+            mimetype='application/json'
+        ))
 
 # ===== VPN API 代理 =====
 
@@ -54,7 +110,7 @@ def tempmail_messages(token):
 @app.route('/api/vpn/<path:target_path>', methods=['GET', 'POST', 'OPTIONS'])
 def proxy_vpn(target_path):
     if request.method == 'OPTIONS':
-        return ('', 204)
+        return add_cors(Response('', 204))
     
     url = f'https://api.jumperservice.com/v1/{target_path}'
     
@@ -86,11 +142,14 @@ def proxy_vpn(target_path):
         )
         
         response = Response(resp.content, resp.status_code)
-        response.headers['Access-Control-Allow-Origin'] = '*'
         response.headers['Content-Type'] = 'application/json'
-        return response
+        return add_cors(response)
     except Exception as e:
-        return Response(f'{{"error": "{str(e)}"}}', status=500, mimetype='application/json')
+        return add_cors(Response(
+            f'{{"error": "{str(e)}"}}',
+            status=500,
+            mimetype='application/json'
+        ))
 
 if __name__ == '__main__':
     app.run()
