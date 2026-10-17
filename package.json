@@ -1,0 +1,10 @@
+{
+  "name": "jumper-vpn-auto",
+  "version": "1.0.0",
+  "description": "JumperVPN auto register with beeinbox",
+  "type": "module",
+  "dependencies": {},
+  "engines": {
+    "node": "18.x"
+  }
+}
