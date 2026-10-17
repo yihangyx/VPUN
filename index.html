@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JumperVPN 自动注册</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            background: #1C1C1E;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #000;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot.red { background: #FF5F57; }
+        .dot.yellow { background: #FEBC2E; }
+        .dot.green { background: #28C840; }
+
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8E8E93;
+        }
+
+        .status {
+            margin-left: auto;
+            font-size: 13px;
+            color: #30D158;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #2C2C2E;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            overflow-y: auto;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1C1C1E;
+        }
+
+        .card {
+            background: #2C2C2E;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: #0A84FF;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+
+        .btn:hover { background: #0071E3; }
+        .btn:disabled { background: #48484A; cursor: not-allowed; }
+
+        .btn.purple { background: #BF5AF2; }
+        .btn.purple:hover { background: #A254D6; }
+        .btn.green { background: #30D158; }
+        .btn.green:hover { background: #28C840; }
+
+        .email-box {
+            background: #1C1C1E;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: 13px;
+            color: #64D2FF;
+            word-break: break-all;
+            margin-top: 8px;
+        }
+
+        .code-box {
+            background: #1C1C1E;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'SF Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: #30D158;
+            text-align: center;
+            letter-spacing: 4px;
+            margin-top: 8px;
+        }
+
+        .log {
+            flex: 1;
+            background: #1C1C1E;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'SF Mono', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            max-height: 200px;
+            line-height: 1.6;
+        }
+
+        .log .ok { color: #30D158; }
+        .log .err { color: #FF453A; }
+        .log .info { color: #8E8E93; }
+        .log .run { color: #0A84FF; }
+        .log .warn { color: #FF9F0A; }
+
+        .iframe-container {
+            flex: 1;
+            background: #fff;
+            margin: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row .btn { flex: 1; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="dots">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="title">JumperVPN 自动注册工具</div>
+        <div class="status" id="status">● 就绪</div>
+    </div>
+
+    <div class="main">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-title">🚀 一键注册</div>
+                <button class="btn purple" id="btn-start" onclick="startFullFlow()">开始自动注册</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📧 临时邮箱</div>
+                <div class="email-box" id="email">等待创建邮箱...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔢 验证码</div>
+                <div class="code-box" id="code">----</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 运行日志</div>
+                <div class="log" id="log"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="iframe-container">
+                <iframe id="mailFrame" src="/api/beeinbox/" onload="onFrameLoad()"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let state = {
+            email: '',
+            code: '',
+            imei: '',
+            deviceToken: '',
+            userToken: '',
+            running: false,
+        };
+
+        function log(msg, type = 'info') {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function setStatus(msg, color = '#30D158') {
+            document.getElementById('status').textContent = `● ${msg}`;
+            document.getElementById('status').style.color = color;
+        }
+
+        // 从iframe中提取邮箱地址
+        function extractEmail() {
+            try {
+                const iframe = document.getElementById('mailFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // 找所有wire:initial-data里的frontend.actions组件
+                const els = doc.querySelectorAll('*');
+                for (let el of els) {
+                    const data = el.getAttribute('wire:initial-data');
+                    if (data && data.includes('frontend.actions')) {
+                        const parsed = JSON.parse(data);
+                        const email = parsed.serverMemo.data.email;
+                        if (email && email !== state.email) {
+                            state.email = email;
+                            document.getElementById('email').textContent = email;
+                            log(`📧 邮箱: ${email}`, 'ok');
+                        }
+                        return email;
+                    }
+                }
+            } catch (e) {
+                // 跨域错误，忽略
+            }
+            return null;
+        }
+
+        // 从iframe中提取验证码
+        function extractCode() {
+            try {
+                const iframe = document.getElementById('mailFrame');
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // 找iframe里的邮件正文
+                const iframes = doc.querySelectorAll('iframe');
+                for (let i of iframes) {
+                    try {
+                        const innerDoc = i.contentDocument || i.contentWindow.document;
+                        const text = innerDoc.body.innerText;
+                        // 匹配4-6位数字验证码
+                        const match = text.match(/\b(\d{4,6})\b/);
+                        if (match) {
+                            const code = match[1];
+                            if (code !== state.code) {
+                                state.code = code;
+                                document.getElementById('code').textContent = code;
+                                log(`🔢 验证码: ${code}`, 'ok');
+                            }
+                            return code;
+                        }
+                    } catch (e) {}
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // 定时从iframe提取邮箱和验证码
+        setInterval(() => {
+            extractEmail();
+            extractCode();
+        }, 2000);
+
+        function onFrameLoad() {
+            log('📬 邮箱页面加载完成', 'info');
+        }
+
+        // 调用VPN API
+        async function vpnApi(path, method = 'GET', body = null, token = null, imei = null) {
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (token) headers['j-token'] = token;
+            if (imei) headers['imei'] = imei;
+
+            const resp = await fetch(`/api/vpn/${path}`, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : undefined,
+            });
+            return resp.json();
+        }
+
+        function generateUUID() {
+            return '{' + 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                const r = Math.random() * 16 | 0;
+                return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16).toUpperCase();
+            }) + '}';
+        }
+
+        function md5(text) {
+            // 简单MD5，实际需要用库，这里先占位
+            // 用crypto-js
+            return CryptoJS.MD5(text).toString();
+        }
+
+        // 一键注册流程
+        async function startFullFlow() {
+            if (state.running) return;
+            state.running = true;
+            document.getElementById('btn-start').disabled = true;
+            setStatus('注册中...', '#FF9F0A');
+
+            try {
+                log('=== 开始自动注册 ===', 'run');
+
+                // Step 1: 生成IMEI
+                state.imei = generateUUID();
+                log(`📱 IMEI: ${state.imei}`, 'info');
+
+                // Step 2: device/init
+                log('🔄 device/init ...', 'run');
+                const initRes = await vpnApi('device/init', 'GET', null, null, state.imei);
+                if (initRes.code !== 200) {
+                    log(`❌ device/init 失败: ${JSON.stringify(initRes)}`, 'err');
+                    return;
+                }
+                state.deviceToken = initRes.data.user_info.token;
+                log('✅ device token 获取成功', 'ok');
+
+                // Step 3: 等待邮箱创建
+                log('⏳ 等待临时邮箱创建...', 'run');
+                let waitCount = 0;
+                while (!state.email && waitCount < 30) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    waitCount++;
+                }
+                if (!state.email) {
+                    log('❌ 邮箱创建超时', 'err');
+                    return;
+                }
+
+                // Step 4: 发送验证码
+                log(`📤 发送验证码到 ${state.email} ...`, 'run');
+                const sendRes = await vpnApi('user/send_email_code', 'POST', 
+                    { email: state.email, type: 10 }, 
+                    state.deviceToken, state.imei);
+                if (sendRes.code !== 200) {
+                    log(`❌ 发送失败: ${JSON.stringify(sendRes)}`, 'err');
+                    return;
+                }
+                log('✅ 验证码已发送', 'ok');
+
+                // Step 5: 等待验证码
+                log('⏳ 等待接收验证码...', 'run');
+                waitCount = 0;
+                while (!state.code && waitCount < 30) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    waitCount++;
+                }
+                if (!state.code) {
+                    log('❌ 等待验证码超时', 'err');
+                    return;
+                }
+
+                // Step 6: 注册
+                const pwdRaw = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+                const pwdMd5 = md5(pwdRaw);
+                log(`📝 注册账号 | 密码: ${pwdRaw}`, 'run');
+
+                const signupRes = await vpnApi('user/signup', 'POST',
+                    { email: state.email, password: pwdMd5, repassword: pwdMd5, code: state.code },
+                    state.deviceToken, state.imei);
+                
+                if (signupRes.code === 200) {
+                    state.userToken = signupRes.data.user_info.token;
+                    const free = signupRes.data.user_info.free_remaining_time;
+                    const hours = Math.floor(free / 3600);
+                    const mins = Math.floor((free % 3600) / 60);
+                    log(`✅ 注册成功! 剩余 ${hours}小时${mins}分`, 'ok');
+                    log(`🔑 密码: ${pwdRaw}`, 'warn');
+                    setStatus(`✅ 注册成功 | ${hours}h${mins}m`, '#30D158');
+                } else {
+                    log(`❌ 注册失败: ${signupRes.message}`, 'err');
+                }
+
+            } catch (e) {
+                log(`❌ 异常: ${e.message}`, 'err');
+                setStatus('错误', '#FF453A');
+            } finally {
+                state.running = false;
+                document.getElementById('btn-start').disabled = false;
+            }
+        }
+    </script>
+
+    <!-- CryptoJS for MD5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+</body>
+</html>
