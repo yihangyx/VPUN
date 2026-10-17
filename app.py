@@ -64,8 +64,7 @@ def proxy_vpn(target_path):
         headers['j-token'] = request.headers.get('j-token')
     if request.headers.get('imei'):
         headers['imei'] = request.headers.get('imei')
-    if request.headers.get('device-name'):
-        headers['device-name'] = request.headers.get('device-name')
+    headers['device-name'] = request.headers.get('device-name', 'iPhone 15 Pro')
     
     resp = requests.request(
         method=request.method,
