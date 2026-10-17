@@ -1,40 +1,57 @@
 from flask import Flask, Response
 import requests
+import hmac
+import hashlib
 import re
 
 app = Flask(__name__)
 
-domains = ['beeinbox.com', 'ussteel.xyz', 'beeinbox.shop', 'beeinbox.space']
+SIGN_KEY = '000000000000000000018d91e471e0989cda27df505a453f2b7635294f2ddf23e3b122acc99c9e9f1e14'
 
-@app.route('/api/test-emails', methods=['GET'])
-def test_emails():
+def make_sign(path):
+    return hmac.new(SIGN_KEY.encode(), path.encode(), hashlib.sha256).hexdigest()
+
+@app.route('/api/test-chinasteel', methods=['GET'])
+def test_chinasteel():
     results = []
-    for d in domains:
-        try:
-            s = requests.Session()
-            # 第一次请求
-            s.get(f'https://{d}/', timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-            # 第二次请求生成邮箱
-            r = s.get(f'https://{d}/', timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
-            
-            # 找邮箱
-            emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w+', r.text)
-            unique_emails = []
-            for e in emails:
-                if 'beeinbox' not in e and 'medium' not in e and 'example' not in e and 'admin' not in e:
-                    if e not in unique_emails:
-                        unique_emails.append(e)
-            
-            # 也找const email =
-            const_match = re.search(r"const email = '([^']+)'", r.text)
-            const_email = const_match.group(1) if const_match else 'not found'
-            
-            results.append(f"{d}:")
-            results.append(f"  const email: {const_email}")
-            results.append(f"  其他邮箱: {unique_emails[:5]}")
-            results.append("")
-        except Exception as e:
-            results.append(f"❌ {d}: {e}")
+    
+    # Step 1: 通过beeinbox.com创建邮箱
+    s = requests.Session()
+    s.get('https://beeinbox.com/', timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+    r = s.get('https://beeinbox.com/', timeout=10, headers={'User-Agent': 'Mozilla/5.0'})
+    
+    const_match = re.search(r"const email = '([^']+)'", r.text)
+    email = const_match.group(1)
+    results.append(f"生成邮箱: {email}")
+    
+    # Step 2: device/init
+    imei = '{CDF214C1-2D62-4D89-A221-DEA05DF2A8BA}'
+    vpn_headers = {
+        'app-id': '2',
+        'version': '1.0.8',
+        'buildNumber': '3',
+        'os': 'ios',
+        'x-sign': make_sign('device/init'),
+        'imei': imei,
+        'device-name': 'iPhone 15 Pro',
+    }
+    r = requests.get('https://api.jumperservice.com/v1/device/init', headers=vpn_headers, timeout=10)
+    device_token = r.json()['data']['user_info']['token']
+    results.append(f"device/init: 成功")
+    
+    # Step 3: 发送验证码
+    vpn_headers['j-token'] = device_token
+    vpn_headers['x-sign'] = make_sign('user/send_email_code')
+    vpn_headers['Content-Type'] = 'application/json'
+    
+    r = requests.post(
+        'https://api.jumperservice.com/v1/user/send_email_code',
+        headers=vpn_headers,
+        json={'email': email, 'type': 10},
+        timeout=10,
+    )
+    results.append(f"发送验证码结果: {r.json()}")
+    
     return Response("\n".join(results), mimetype='text/plain')
 
 if __name__ == '__main__':
