@@ -17,7 +17,7 @@ def proxy_beeinbox(target_path):
         return ('', 204)
     
     query_string = request.query_string.decode()
-    url = f'https://ussteel.xyz/{target_path}'
+    url = f'https://amades.site/{target_path}'
     if query_string:
         url += '?' + query_string
     
@@ -27,7 +27,7 @@ def proxy_beeinbox(target_path):
         headers={
             'User-Agent': request.headers.get('User-Agent', ''),
             'Accept': request.headers.get('Accept', '*/*'),
-            'Referer': 'https://ussteel.xyz/',
+            'Referer': 'https://amades.site/',
         },
         data=request.get_data(),
         cookies=request.cookies,
