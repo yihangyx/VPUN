@@ -649,7 +649,7 @@
 
             try {
                 log('════════════════════════', 'info');
-                log('🚀 开始自动注册流程', 'run');
+                log(' 开始自动注册流程', 'run');
 
                 if (!state.email) {
                     log('\n📌 Step 1: 创建临时邮箱', 'run');
@@ -693,7 +693,7 @@
                     await new Promise(r => setTimeout(r, 1000));
                     waited++;
                     if (waited % 15 === 0) {
-                        log('   ⏳ 已等待 ' + waited + ' 秒...', 'info');
+                        log('    已等待 ' + waited + ' 秒...', 'info');
                     }
                 }
 
@@ -732,7 +732,7 @@
                 const durationText = hours + '小时' + mins + '分';
 
                 log('\n════════════════════════', 'ok');
-                log('🎉 注册成功！', 'ok');
+                log(' 注册成功！', 'ok');
                 log('   邮箱: ' + state.email, 'ok');
                 log('   密码: ' + pwdRaw, 'warn');
                 log('   免费时长: ' + durationText, 'ok');
@@ -759,7 +759,7 @@
         }
 
         window.onload = function() {
-            log('👋 欢迎使用 JumperVPN 自动注册工具', 'info');
+            log('VPN 自动注册工具', 'info');
             log('正在自动创建邮箱...', 'info');
             createNewEmail();
         };
